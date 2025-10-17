@@ -1,0 +1,20 @@
+.lv-root { min-height:100vh; background:linear-gradient(90deg,#2b3a2f,#3b4640 50%,#2b2f33); position:relative; font-family:Inter,system-ui,Arial; color:#fff;}
+.lv-left, .lv-right { position:absolute; top:0; bottom:0; width:80px; pointer-events:none; }
+.lv-left { left:0; background:linear-gradient(180deg, rgba(0,0,0,.55), transparent); filter:blur(14px); }
+.lv-right { right:0; background:linear-gradient(180deg, rgba(0,0,0,.55), transparent); filter:blur(14px); }
+
+.lv-top { position:absolute; left:24px; right:24px; top:18px; display:flex; align-items:center; justify-content:space-between; z-index:10;}
+.lv-leftBtn { background:rgba(255,255,255,0.06); padding:8px 12px; border-radius:12px; border:1px solid rgba(255,255,255,0.06); }
+.lv-time { background:rgba(255,255,255,0.06); padding:8px 12px; border-radius:12px; }
+.lv-weather { background:rgba(255,255,255,0.06); padding:8px 12px; border-radius:12px; text-align:right; font-size:14px; }
+
+.lv-toolbar { position:absolute; right:20px; top:30%; display:flex; flex-direction:column; gap:10px; z-index:10; }
+.lv-tool { background:rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.06); color:#fff; padding:10px; border-radius:999px; width:46px; height:46px; }
+
+.lv-main { display:flex; align-items:center; justify-content:center; min-height:100vh; padding:80px 20px; }
+.lv-videoWrap { width:1100px; max-width:92vw; border-radius:16px; overflow:hidden; background:#000; border:1px solid rgba(255,255,255,0.06); position:relative; box-shadow:0 30px 80px rgba(0,0,0,.6);}
+.lv-video { width:100%; height:650px; object-fit:cover; display:block; background:#000; }
+.lv-live { position:absolute; bottom:18px; right:18px; background:rgba(0,0,0,0.5); padding:6px 10px; border-radius:999px; font-weight:600; }
+.lv-controls { position:absolute; left:50%; transform:translateX(-50%); bottom:20px; display:flex; gap:12px; align-items:center; background:rgba(0,0,0,0.45); padding:8px 14px; border-radius:999px; }
+.lv-slider { width:380px; height:8px; background:rgba(255,255,255,0.06); border-radius:999px; position:relative; }
+.lv-thumb { position:absolute; left:50%; top:-6px; width:16px; height:16px; background:#fff; border-radius:50%; transform:translateX(-50%); }

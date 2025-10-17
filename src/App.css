@@ -1,0 +1,64 @@
+.container{
+    max-width: 1440px;
+    padding: 0px 80px;
+}
+@keyframes bg-zoom-in {
+  0% {
+    transform: scale(1);
+    background-size: 100%;
+  }
+  100% {
+    transform: scale(1.05);
+    background-size: 110%;
+  }
+}
+
+/* Use this class for continuous zoom-in effect */
+.bg-zoom {
+  animation: bg-zoom-in 8s ease-in-out infinite alternate;
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: cover;
+}
+.active{
+    width: 100%;
+    position: absolute;
+    /* background-color: transparent; */
+    z-index: 20;
+    top: 0px;
+}
+.navbars{
+    top: 0px;
+    width: 100%;
+    position: sticky;
+    /* background-color: #111111; */
+    z-index: 20;
+}
+#submenu{
+    display: none;
+    position: absolute;
+  }
+  #main-menu:hover{
+    #submenu{
+       display:flex;
+    }
+  }
+@media  (max-width:992px) {
+    .container{
+       padding: 10px 40px;
+    }
+}
+@media  (max-width:596px) {
+    .container{
+       padding: 10px 20px;
+    }
+}
+
+.slick-list .slick-track{
+    width: auto;
+}
+@media  (min-width:1440px) {
+    .container{
+       margin: auto;
+    }
+}
