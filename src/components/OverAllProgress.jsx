@@ -213,7 +213,7 @@ export default function OverAllProgress() {
           {/* Sensor Info */}
           <div className="mb-4 bg-white rounded-lg p-4 shadow">
             <p className="text-sm text-gray-500">Hardware Sensor</p>
-            <p className="text-base font-medium text-gray-800">NSIT</p>
+            <p className="text-base font-medium text-gray-800">Neela Gumbad</p>
           </div>
           <p className="text-sm text-gray-600 mb-4">
             Hardware Sensor (NSIT): Live feed and project progress
