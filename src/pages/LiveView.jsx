@@ -18,8 +18,9 @@ export default function LiveDashboard() {
   // Function to load the HLS stream
   const loadStream = () => {
   //  const src = "http://localhost:8888/cam/index.m3u8";
-    const src = `${API_URL}/cam/index.m3u8`;
-    const video = videoRef.current;
+    const src = `${API_URL}/camera/cam/index.m3u8`;
+ // const src = "http://72.60.234.233:8888/cam/index.m3u8";  
+  const video = videoRef.current;
     if (!video) return;
     if (Hls.isSupported()) {
       const hls = new Hls();
