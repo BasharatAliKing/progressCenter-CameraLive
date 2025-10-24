@@ -1,10 +1,11 @@
-import React from "react";
+import React, { useContext } from "react";
 import { MapContainer, TileLayer, Marker, Popup } from "react-leaflet";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
 // import "./mapStyles.css"; // custom CSS for blinking marker
 import Sidebar from "../layouts/Sidebar";
 import Navbar from "../layouts/Navbar";
+import UserContext from "../useContexts/UserContext";
 // Coordinates for map markers
 const LOCATIONS = [
   {
@@ -37,6 +38,7 @@ const BlinkingIcon = L.divIcon({
 });
 
 const Dashboard = () => {
+   const { cameras } = useContext(UserContext);
   return (
     <div className="h-screen w-screen flex bg-gray-50">
       {/* Sidebar */}
@@ -82,7 +84,7 @@ const Dashboard = () => {
           <div className="absolute top-20 right-6 flex space-x-3 bg-white shadow-lg rounded-lg px-4 py-2 items-center border border-gray-200">
             <span className="text-sm text-gray-700 font-medium">View:</span>
             <select className="border border-gray-300 rounded px-2 py-1 text-sm outline-none">
-              <option>Active (2)</option>
+              <option>Active {cameras.length()} ()</option>
               <option>Inactive</option>
             </select>
 

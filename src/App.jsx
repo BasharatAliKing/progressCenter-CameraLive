@@ -19,9 +19,9 @@ const App = () => {
           <Route path='/dashboard' element={<Home/>} />
           <Route path='map' element={<MapView/>} />
           <Route path='project-view' element={<ProjectView/>} />
-          <Route path='camera' element={<Camera/>} />
-          <Route path='/live-view' element={<LiveView/>} />
-          <Route path='/ai-peopleflow' element={<AiPeopleFlow/>} />
+          <Route path='camera/:id' element={<Camera/>} />
+          <Route path='live-view/:id' element={<LiveView/>} />
+          <Route path='ai-peopleflow' element={<AiPeopleFlow/>} />
         </Route>
       </Routes>
      </Router>

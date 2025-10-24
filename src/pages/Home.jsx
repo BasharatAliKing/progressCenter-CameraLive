@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { FiSearch, FiBell, FiHelpCircle, FiEdit2 } from "react-icons/fi";
 import { IoEarthOutline } from "react-icons/io5";
 import { BsGrid } from "react-icons/bs";
@@ -6,7 +6,8 @@ import { MdOutlineSafetyCheck } from "react-icons/md";
 import { BiLocationPlus } from "react-icons/bi";
 import { Link } from "react-router-dom";
 import BarComponent from "../components/BarComponent";
-
+const API_URL = import.meta.env.VITE_API_URL; // ✅ Correct way in Vite
+const IMAGE_PATH=import.meta.env.VITE_IMAGE_PATH;// Correct Image Path
 const projects = [
   {
     id: 1,
@@ -41,23 +42,40 @@ const projects = [
 ];
 
 export default function Home() {
+  const [cameras, setCameras] = useState([]);
+  useEffect(() => {
+    const fetchCameras = async () => {
+      try {
+        const res = await fetch(`${API_URL}/camera`);
+        const data = await res.json();
+        // ✅ Filter unique locations
+      const uniqueCameras = data.cameras.filter(
+        (camera, index, self) =>
+          index === self.findIndex((c) => c.location === camera.location)
+      );
+      setCameras(uniqueCameras);
+        // console.log(data.cameras);
+      } catch (error) {
+        console.error("Error fetching cameras:", error);
+      }
+    };
+    fetchCameras();
+  }, []);
   return (
     <div
       className="min-h-screen bg-cover bg-center"
       style={{
-        backgroundImage:
-          "url('Sunrise.jpg')",
+        backgroundImage: "url('Sunrise.jpg')",
       }}
     >
-      
       {/* Content */}
       <div className="max-w-7xl mx-auto px-6 py-10">
-       <BarComponent/>
+        <BarComponent />
         {/* Cards Grid */}
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-          {projects.map((project) => (
-            <div
-              key={project.id}
+          {cameras.map((project, index) => (
+            <Link to={`/camera/${project._id}`}
+              key={index}
               className="bg-[#f7f5ee]/90 cursor-pointer backdrop-blur-md rounded-2xl shadow-sm border border-gray-200 p-4 flex flex-col justify-between hover:shadow-md transition"
             >
               {/* Status + Edit */}
@@ -73,21 +91,21 @@ export default function Home() {
               {/* Title */}
               <div>
                 <h2 className="font-semibold text-gray-800 text-lg">
-                  {project.title}
+                  {project.location}
                 </h2>
                 <p className="text-sm text-gray-500 flex items-center gap-1 mt-1">
-                 <BiLocationPlus/>
+                  <BiLocationPlus />
                   {project.city}
                 </p>
               </div>
               {/* Image */}
-              <Link to="/camera" className="mt-3 rounded-lg overflow-hidden">
+              <div className="mt-3 rounded-lg overflow-hidden">
                 <img
-                  src={project.image}
-                  alt={project.title}
+                  src={`${IMAGE_PATH}${project.image}`}
+                  alt={project.location}
                   className="w-full h-40 object-cover"
                 />
-              </Link>
+              </div>
               {/* Members */}
               <div className="flex items-center justify-between mt-4">
                 <p className="text-sm text-gray-500">
@@ -96,8 +114,8 @@ export default function Home() {
                     Invite +
                   </span>
                 </p>
-                <div className="flex -space-x-2">
-                  {project.members.map((m, idx) => (
+                {/* <div className="flex -space-x-2">
+                  {cameras.members.map((m, idx) => (
                     <div
                       key={idx}
                       className="w-7 h-7 rounded-full flex items-center justify-center text-xs font-semibold border-2 border-white"
@@ -110,13 +128,15 @@ export default function Home() {
                       {m}
                     </div>
                   ))}
-                </div>
+                </div> */}
               </div>
               {/* Bottom Info */}
               <div className="flex justify-between mt-4 text-xs text-gray-600">
                 <div>
                   <p className="text-gray-400 text-xs">Last update</p>
-                  <p className="font-medium">{project.lastUpdate}</p>
+                  <p className="font-medium">
+                    {new Date(project.updatedAt).toISOString().split("T")[0]}
+                  </p>
                 </div>
                 <div>
                   <p className="text-gray-400 text-xs">Safety score</p>
@@ -124,10 +144,20 @@ export default function Home() {
                 </div>
                 <div>
                   <p className="text-gray-400 text-xs">Construction</p>
-                  <p className="font-medium">{project.construction}</p>
+                  <p className="font-medium">
+                    {(() => {
+                      const createdDate = new Date(project.createdAt);
+                      const currentDate = new Date();
+                      const diffTime = Math.abs(currentDate - createdDate);
+                      const diffDays = Math.floor(
+                        diffTime / (1000 * 60 * 60 * 24)
+                      );
+                      return `${diffDays} Days `;
+                    })()}
+                  </p>
                 </div>
               </div>
-            </div>
+            </Link>
           ))}
         </div>
       </div>

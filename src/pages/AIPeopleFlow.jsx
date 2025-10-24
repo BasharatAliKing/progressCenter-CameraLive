@@ -13,7 +13,7 @@ const AiPeopleFlow = () => {
         <div className="flex flex-col gap-1 w-full">
           {/* 🔹 Header */}
         <Link
-          to="/live-view"
+          to="/dashboard"
           className="text-gray-600 hover:text-primary mb-2 hover:underline flex items-center "
         >
           <ChevronLeft className="mt-[2px]" size="18" /> Back

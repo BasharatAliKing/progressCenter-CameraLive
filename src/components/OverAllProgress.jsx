@@ -172,7 +172,6 @@ export default function OverAllProgress() {
           </AreaChart>
         </ResponsiveContainer>
       </div>
-
       {/* Footer Info */}
       <div className="flex flex-wrap justify-between items-center text-sm font-semibold mt-4 px-2">
         <div className="flex items-center space-x-2">
@@ -209,7 +208,6 @@ export default function OverAllProgress() {
               Air Quality Info
             </h6>
           </div>
-
           {/* Sensor Info */}
           <div className="mb-4 bg-white rounded-lg p-4 shadow">
             <p className="text-sm text-gray-500">Hardware Sensor</p>

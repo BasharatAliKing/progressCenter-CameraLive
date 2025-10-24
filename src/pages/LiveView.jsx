@@ -6,9 +6,14 @@ import {
   PlayCircle,
 } from "lucide-react";
 import { Camera, Download, RefreshCw } from "lucide-react";
-import { Link } from "react-router-dom";
+import { Link, useParams } from "react-router-dom";
 const API_URL = import.meta.env.VITE_API_URL; // ✅ Correct way in Vite
+const CAMERA_URL = import.meta.env.VITE_CAMERA_URL; // ✅ Correct way in Vite
+
 export default function LiveDashboard() {
+  const params=useParams();
+  const [cameras, setCameras] = useState([]);
+  console.log(cameras);
   const videoRef = useRef(null);
   const [aiActive, setAIActive] = useState(true);
    const [reloadKey, setReloadKey] = useState(0); // Used to force reload HLS
@@ -18,8 +23,8 @@ export default function LiveDashboard() {
   // Function to load the HLS stream
   const loadStream = () => {
   //  const src = "http://localhost:8888/cam/index.m3u8";
-    const src = `${API_URL}/camera/cam/index.m3u8`;
- // const src = "http://72.60.234.233:8888/cam/index.m3u8";  
+ //   const src = `${API_URL}/camera/${params.id}/live`;
+  const src = `${CAMERA_URL}/${params.id}/index.m3u8`;  
   const video = videoRef.current;
     if (!video) return;
     if (Hls.isSupported()) {
@@ -34,7 +39,21 @@ export default function LiveDashboard() {
       video.play().catch(() => {});
     }
   };
-
+      useEffect(() => {
+    const fetchCameras = async () => {
+      try {
+        const res = await fetch(`${API_URL}/camera`);
+        const data = await res.json();
+        console.log(data);
+        // find the camera whose _id matches the param
+        const found = data.cameras.find((cam) => cam._id === params.id);
+        setCameras(found);
+      } catch (error) {
+        console.error("Error fetching cameras:", error);
+      }
+    };
+    fetchCameras();
+  }, []);
   // Reload stream whenever reloadKey changes
   useEffect(() => {
     loadStream();
@@ -70,23 +89,22 @@ export default function LiveDashboard() {
       <div>
         {/* Breadcrumb */}
         <div className="text-sm text-white mb-1">
-          Dashboard / <span className="text-white">Neela Gumbad</span> /{" "}
-          <span className="font-medium text-white">Camera 1</span>
+          <Link className="hover:text-gray-100 duration-500 hover:scale-105" to='/dashboard'>Dashboard</Link> /
+           <Link to={`/camera/${params.id}`} className="text-white">{" "}{cameras.location}</Link> /
+          <span className="font-medium text-white">{" "}{cameras.name}</span>
         </div>
-
         {/* Title */}
         <h2 className="text-xl font-semibold text-white">
-          Camera 1 - Neela Gumbad
+         {cameras.name} - {cameras.location}
         </h2>
       </div>
-
       {/* Right Section */}
       <div className="flex items-center gap-3">
         {/* Change Camera Button */}
-        <button className="flex items-center gap-2 px-4 py-2 rounded-xl bg-white text-gray-800 font-medium shadow hover:bg-gray-50 border border-gray-200 transition">
+        {/* <button className="flex items-center gap-2 px-4 py-2 rounded-xl bg-white text-gray-800 font-medium shadow hover:bg-gray-50 border border-gray-200 transition">
           <Camera size={18} />
           Change Camera
-        </button>
+        </button> */}
 
       {/* Download Image */}
           <button
