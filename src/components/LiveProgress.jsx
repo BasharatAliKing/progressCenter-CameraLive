@@ -32,7 +32,6 @@ const LiveProgress = () => {
       const data = await res.json();
       if (data?.cameras) {
         setAllCameras(data.cameras);
-
         const foundCamera = data.cameras.find((cam) => cam._id === params.id);
         setMainCamera(foundCamera);
 

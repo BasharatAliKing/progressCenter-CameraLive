@@ -7,7 +7,7 @@ import { BiLocationPlus } from "react-icons/bi";
 import { Link } from "react-router-dom";
 import BarComponent from "../components/BarComponent";
 const API_URL = import.meta.env.VITE_API_URL; // ✅ Correct way in Vite
-const IMAGE_PATH=import.meta.env.VITE_IMAGE_PATH;// Correct Image Path
+const IMAGE_PATH = import.meta.env.VITE_IMAGE_PATH; // Correct Image Path
 const projects = [
   {
     id: 1,
@@ -49,11 +49,11 @@ export default function Home() {
         const res = await fetch(`${API_URL}/camera`);
         const data = await res.json();
         // ✅ Filter unique locations
-      const uniqueCameras = data.cameras.filter(
-        (camera, index, self) =>
-          index === self.findIndex((c) => c.location === camera.location)
-      );
-      setCameras(uniqueCameras);
+        const uniqueCameras = data.cameras.filter(
+          (camera, index, self) =>
+            index === self.findIndex((c) => c.location === camera.location)
+        );
+        setCameras(uniqueCameras);
         // console.log(data.cameras);
       } catch (error) {
         console.error("Error fetching cameras:", error);
@@ -74,15 +74,22 @@ export default function Home() {
         {/* Cards Grid */}
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
           {cameras.map((project, index) => (
-            <Link to={`/camera/${project._id}`}
+            <Link
+              to={`/camera/${project._id}`}
               key={index}
               className="bg-[#f7f5ee]/90 cursor-pointer backdrop-blur-md rounded-2xl shadow-sm border border-gray-200 p-4 flex flex-col justify-between hover:shadow-md transition"
             >
               {/* Status + Edit */}
               <div className="flex justify-between items-center mb-3">
                 <span className="text-xs bg-gray-100 px-2 py-1 rounded-md text-gray-600 flex items-center gap-1">
-                  <span className="w-2 h-2 bg-primary rounded-full"></span>
-                  Activity not enabled
+                  {project.status === "active" ? (
+                    <span className="w-2 mt-[1px] h-2 bg-green-500 rounded-full"></span>
+                  ) : (
+                    <span className="w-2 h-2 mt-[1px] bg-primary rounded-full"></span>
+                  )}
+                  {project.status === "active"
+                    ? "Activity Enabled"
+                    : " Activity not enabled"}
                 </span>
                 <button className="p-1 hover:bg-gray-100 rounded">
                   <FiEdit2 className="text-gray-600" />

@@ -22,7 +22,9 @@ const Camera = () => {
            : view===1 ?
            <OverAllProgress/>
            :
-           <DetailedSchedule/>
+           <div className="mx-5 overflow-y-auto">
+            <DetailedSchedule/>
+           </div>
         }
        </div>
       

@@ -9,9 +9,9 @@ const CameraCard = ({camera, funcimg }) => {
     <div className="bg-white p-4 rounded-md flex flex-col gap-3">
       <div className="img relative">
           {/* Live badge */}
-            <Link to={`/live-view/${camera._id}`} title="Live View" className="absolute cursor-pointer top-2 left-3 flex items-center gap-1 bg-[#ffffff7d] px-2 py-1 rounded-md text-white text-sm">
-              <PlayCircle className="w-4 h-4 text-green-400 animate-pulse" />
-              <span className="text-[14px] font-medium text-black">Live</span>
+            <Link to={`/live-view/${camera._id}`} title="Live View" className="absolute cursor-pointer top-2 left-3 flex items-center gap-1 bg-green-600 px-2 py-1 rounded-md text-white text-sm">
+              <PlayCircle className="w-4 h-4 text-gray-100 animate-pulse" />
+              <span className="text-[14px] font-medium text-gray-100">Live</span>
             </Link>
         <Eye
           onClick={(e) => {

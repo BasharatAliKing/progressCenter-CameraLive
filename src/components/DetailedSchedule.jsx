@@ -403,7 +403,7 @@ export default function DetailedSchedule({
   if (err) return <div className="ruda-error">Error: {err}</div>;
 
   return (
-    <div className="ruda-container">
+    <div className="ruda-container container">
       {/* Header */}
       <div className="ruda-header">
         <div className="header-left">
@@ -885,11 +885,10 @@ export default function DetailedSchedule({
         .ruda-container {
           font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
           // background: #2c5282;
-          min-height: 100vh;
+        //  min-height: 100vh;
           padding: 0;
           margin: 0;
         }
-
         .ruda-header {
           background: #2c5282;
           color: white;
