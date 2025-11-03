@@ -253,7 +253,7 @@ export default function OverAllProgress() {
           </p>
 
           {/* AQI & Gases */}
-        <div className="space-y-4">
+     <div className="space-y-4">
   {latestdataAqi && (
     <>
       {[
@@ -266,30 +266,45 @@ export default function OverAllProgress() {
         { name: "O3", value: latestdataAqi.o3, unit: "ppb" },
         { name: "Humidity", value: latestdataAqi.hum, unit: "%" },
         { name: "Temperature", value: latestdataAqi.temp, unit: "°C" },
-      ].map((gas, idx) => (
-        <div key={idx}>
-          <div className="flex justify-between mb-1">
-            <p className="text-sm font-medium text-gray-700">{gas.name}</p>
-            <p className="text-sm font-semibold text-gray-800">
-              {gas.value}
-              <span className="text-gray-600"> {gas.unit}</span>
-            </p>
-          </div>
+      ].map((gas, idx) => {
+        // 🌈 Determine color based on AQI-like value
+        const getAqiColor = (value) => {
+          if (value <= 50) return "bg-[#248606]";
+          if (value <= 100) return "bg-[#44e508]";
+          if (value <= 150) return "bg-[#E9CF3C]";
+          if (value <= 200) return "bg-[#c98800]";
+          if (value <= 300) return "bg-[#ea0a08]";
+          if (value <= 400) return "bg-[#9008dc]";
+          return "bg-[#910003]"; // for 300+
+        };
 
-          {/* Optional progress bar visualization */}
-          <div className="w-full h-2 bg-gray-300 rounded-full overflow-hidden">
-            <div
-              className="h-2 bg-blue-500 rounded-full"
-              style={{ width: `${Math.min((gas.value / 1000) * 100, 100)}%` }}
-            ></div>
+        // 🧮 Progress bar width (normalized)
+        const progress = Math.min((gas.value / 500) * 100, 100);
+        const color = getAqiColor(gas.value);
+
+        return (
+          <div key={idx}>
+            <div className="flex justify-between mb-1">
+              <p className="text-sm font-medium text-gray-700">{gas.name}</p>
+              <p className="text-sm font-semibold text-gray-800">
+                {gas.value}
+                <span className="text-gray-600"> {gas.unit}</span>
+              </p>
+            </div>
+
+            {/* ✅ Colored progress bar */}
+            <div className="w-full h-2 bg-gray-300 rounded-full overflow-hidden">
+              <div
+                className={`h-2 rounded-full ${color}`}
+                style={{ width: `${progress}%` }}
+              ></div>
+            </div>
           </div>
-        </div>
-      ))}
+        );
+      })}
     </>
   )}
 </div>
-
-
           {/* AQI Trend */}
           <div className="mt-6">
             <p className="text-sm text-gray-600 mb-2">AQI Trend (Last 5 hrs)</p>
@@ -303,12 +318,13 @@ export default function OverAllProgress() {
           <div className="mt-4">
             <p className="text-sm text-gray-600 mb-1">AQI Legend</p>
             <div className="flex space-x-1 h-2 mb-1">
-              <div className="flex-1 bg-green-500 rounded-sm"></div>
-              <div className="flex-1 bg-yellow-500 rounded-sm"></div>
-              <div className="flex-1 bg-orange-500 rounded-sm"></div>
-              <div className="flex-1 bg-red-500 rounded-sm"></div>
-              <div className="flex-1 bg-purple-500 rounded-sm"></div>
-              <div className="flex-1 bg-brown-700 rounded-sm"></div>
+              <div className="flex-1 bg-[#248606] rounded-sm"></div>
+              <div className="flex-1 bg-[#44e508] rounded-sm"></div>
+              <div className="flex-1 bg-[#e9cf3c] rounded-sm"></div>
+              <div className="flex-1 bg-[#c98800] rounded-sm"></div>
+              <div className="flex-1 bg-[#ea0a08] rounded-sm"></div>
+              <div className="flex-1 bg-[#9008dc] rounded-sm"></div>
+              <div className="flex-1 bg-[#910003] rounded-sm"></div>
             </div>
             <div className="flex justify-between text-xs text-gray-600">
               <span>0</span>
@@ -317,6 +333,7 @@ export default function OverAllProgress() {
               <span>150</span>
               <span>200</span>
               <span>300</span>
+              <span>400</span>
               <span>500+</span>
             </div>
           </div>
