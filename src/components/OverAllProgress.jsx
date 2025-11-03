@@ -56,7 +56,6 @@ export default function OverAllProgress() {
     const [aqi, setAqi] = useState(null);
     const [aqiLatest, setAqiLatest] = useState(null);
     const latestdataAqi=aqiLatest?.air_quality;
-    console.log(latestdataAqi);
     const fetchCameras = async () => {
       try {
         const res = await fetch(`${API_URL}/camera`);
@@ -340,7 +339,7 @@ export default function OverAllProgress() {
 
           {/* Last Updated */}
           <p className="text-xs text-gray-500 mt-3">
-            Last updated: 2025-09-11T07:40:29.343Z
+            Last updated: {aqiLatest.createdAt}
           </p>
         </div>
       </div>
