@@ -339,7 +339,7 @@ export default function OverAllProgress() {
 
           {/* Last Updated */}
           <p className="text-xs text-gray-500 mt-3">
-            Last updated: {aqiLatest.createdAt}
+            Last updated: {aqiLatest?.createdAt}
           </p>
         </div>
       </div>
