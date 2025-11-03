@@ -1,6 +1,7 @@
 import { Cctv, Tv } from "lucide-react";
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { GiProgression } from "react-icons/gi";
+import { useParams } from "react-router-dom";
 import {
   LineChart,
   Line,
@@ -43,13 +44,47 @@ const datachart = [
     { month: "Nov-25", planned: 98, actual: 72 },
     { month: "Dec-25", planned: 100, actual: 75 },
   ];
-
+const API_URL = import.meta.env.VITE_API_URL; // ✅ Correct way in Vite
   const plannedProgress = data[data.length - 1].planned;
   const actualProgress = data[data.length - 1].actual;
   const dataDate = "10-Sep-25";
 const COLORS = ["#6366F1", "#22C55E", "#EF4444"];
 
 export default function OverAllProgress() {
+  const params=useParams();
+   const [allCameras, setAllCameras] = useState([]);
+    const [aqi, setAqi] = useState(null);
+    const [aqiLatest, setAqiLatest] = useState(null);
+    const latestdataAqi=aqiLatest?.air_quality;
+    console.log(latestdataAqi);
+    const fetchCameras = async () => {
+      try {
+        const res = await fetch(`${API_URL}/camera`);
+        const data = await res.json();
+        if (data?.cameras) {
+          setAllCameras(data.cameras);
+          const foundCamera = data.cameras.find((cam) => cam._id === params.id);          
+          setAqi(foundCamera?.aqiData || []);
+          // Extract latest AQI
+     if (foundCamera?.aqiData?.length > 0) {
+  // Sort AQI records by creation time (latest first)
+  const sorted = [...foundCamera.aqiData].sort(
+    (a, b) => new Date(b.createdAt) - new Date(a.createdAt)
+  );
+
+  // Pick the most recent AQI entry (the one last added to DB)
+  const latest = sorted[0];
+  setAqiLatest(latest);
+}
+        }
+        
+      } catch (error) {
+        console.error("Error fetching cameras:", error);
+      }
+    };
+    useEffect(()=>{
+      fetchCameras();
+    },[]);
   return (
     <div className="min-h-screen flex flex-col gap-9 p-8 mx-5 w-full rounded-md bg-[#ffffff69]">
       <h1 className="text-3xl font-bold flex items-center gap-1"><GiProgression size="30"/> Progress</h1>
@@ -93,27 +128,27 @@ export default function OverAllProgress() {
                 Actual vs Planned Progress
               </p>
             </div>
-            <div class="flex flex-col w-full flex-wrap gap-4">
+            <div className="flex flex-col w-full flex-wrap gap-4">
               {/* <!-- SPI Box --> */}
-              <div class="bg-white w-full shadow-md rounded-lg p-4 text-center">
-                <div class="text-lg font-semibold mb-2 text-center">
+              <div className="bg-white w-full shadow-md rounded-lg p-4 text-center">
+                <div className="text-lg font-semibold mb-2 text-center">
                   SPI (Projection)
                 </div>
-                <div class="text-2xl mx-auto w-30 font-bold bg-blue-500 text-white rounded-md mb-1">
+                <div className="text-2xl mx-auto w-30 font-bold bg-blue-500 text-white rounded-md mb-1">
                   0.74
                 </div>
-                <div class="text-xs text-gray-400">Projection Index</div>
+                <div className="text-xs text-gray-400">Projection Index</div>
               </div>
               {/* <!-- Variance Box --> */}
-              <div class="bg-white w-full shadow-md rounded-lg p-4 text-center">
-                <div class="text-lg font-semibold mb-2 text-center">
+              <div className="bg-white w-full shadow-md rounded-lg p-4 text-center">
+                <div className="text-lg font-semibold mb-2 text-center">
                   Variance
                 </div>
-                <div class="text-2xl mx-auto w-30 font-bold bg-red-500 text-white rounded-md mb-1">
+                <div className="text-2xl mx-auto w-30 font-bold bg-red-500 text-white rounded-md mb-1">
                   19.32%
                 </div>
-                <div class="text-xs text-gray-400 mb-1">Actual vs Planned</div>
-                <div class="text-xs font-semibold text-red-700">
+                <div className="text-xs text-gray-400 mb-1">Actual vs Planned</div>
+                <div className="text-xs font-semibold text-red-700">
                   Behind planned
                 </div>
               </div>
@@ -218,36 +253,42 @@ export default function OverAllProgress() {
           </p>
 
           {/* AQI & Gases */}
-          <div className="space-y-4">
-            {[
-              { name: "AQI", value: 80, unit: "AQI", progress: 8 },
-              { name: "PM2.5", value: 26, unit: "µg/m³", progress: 5 },
-              { name: "PM10", value: 28, unit: "µg/m³", progress: 6 },
-              { name: "CO", value: 816, unit: "ppb", progress: 82 },
-              { name: "CO2", value: 500, unit: "ppm", progress: 50 },
-              { name: "NO2", value: 12, unit: "ppb", progress: 1 },
-              { name: "SO2", value: 30, unit: "ppb", progress: 3 },
-              { name: "O3", value: 195, unit: "ppb", progress: 19 },
-            ].map((gas, idx) => (
-              <div key={idx}>
-                <div className="flex justify-between mb-1">
-                  <p className="text-sm font-medium text-gray-700">
-                    {gas.name}
-                  </p>
-                  <p className="text-sm font-semibold text-gray-800">
-                    {gas.value}{" "}
-                    <span className="text-gray-600">{gas.unit}</span>
-                  </p>
-                </div>
-                <div className="w-full h-2 bg-gray-300 rounded-full overflow-hidden">
-                  <div
-                    className="h-2 bg-blue-500 rounded-full"
-                    style={{ width: `${gas.progress}%` }}
-                  ></div>
-                </div>
-              </div>
-            ))}
+        <div className="space-y-4">
+  {latestdataAqi && (
+    <>
+      {[
+        { name: "PM2.5", value: latestdataAqi.pm2_5, unit: "µg/m³" },
+        { name: "PM10", value: latestdataAqi.pm10, unit: "µg/m³" },
+        { name: "CO", value: latestdataAqi.co, unit: "ppb" },
+        { name: "CO2", value: latestdataAqi.co2, unit: "ppm" },
+        { name: "NO2", value: latestdataAqi.no2, unit: "ppb" },
+        { name: "SO2", value: latestdataAqi.so2, unit: "ppb" },
+        { name: "O3", value: latestdataAqi.o3, unit: "ppb" },
+        { name: "Humidity", value: latestdataAqi.hum, unit: "%" },
+        { name: "Temperature", value: latestdataAqi.temp, unit: "°C" },
+      ].map((gas, idx) => (
+        <div key={idx}>
+          <div className="flex justify-between mb-1">
+            <p className="text-sm font-medium text-gray-700">{gas.name}</p>
+            <p className="text-sm font-semibold text-gray-800">
+              {gas.value}
+              <span className="text-gray-600"> {gas.unit}</span>
+            </p>
           </div>
+
+          {/* Optional progress bar visualization */}
+          <div className="w-full h-2 bg-gray-300 rounded-full overflow-hidden">
+            <div
+              className="h-2 bg-blue-500 rounded-full"
+              style={{ width: `${Math.min((gas.value / 1000) * 100, 100)}%` }}
+            ></div>
+          </div>
+        </div>
+      ))}
+    </>
+  )}
+</div>
+
 
           {/* AQI Trend */}
           <div className="mt-6">
