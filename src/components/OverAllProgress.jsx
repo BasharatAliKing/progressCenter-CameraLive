@@ -53,6 +53,7 @@ const COLORS = ["#6366F1", "#22C55E", "#EF4444"];
 export default function OverAllProgress() {
   const params=useParams();
    const [allCameras, setAllCameras] = useState([]);
+   const [OneCamera,setOneCamera]=useState(null);
     const [aqi, setAqi] = useState(null);
     const [aqiLatest, setAqiLatest] = useState(null);
     const latestdataAqi=aqiLatest?.air_quality;
@@ -63,6 +64,7 @@ export default function OverAllProgress() {
         if (data?.cameras) {
           setAllCameras(data.cameras);
           const foundCamera = data.cameras.find((cam) => cam._id === params.id);          
+          setOneCamera(foundCamera);
           setAqi(foundCamera?.aqiData || []);
           // Extract latest AQI
      if (foundCamera?.aqiData?.length > 0) {
@@ -245,10 +247,10 @@ export default function OverAllProgress() {
           {/* Sensor Info */}
           <div className="mb-4 bg-white rounded-lg p-4 shadow">
             <p className="text-sm text-gray-500">Hardware Sensor</p>
-            <p className="text-base font-medium text-gray-800">Neela Gumbad</p>
+            <p className="text-base font-medium text-gray-800">{OneCamera?.location}</p>
           </div>
           <p className="text-sm text-gray-600 mb-4">
-            Hardware Sensor (NSIT): Live feed and project progress
+            Hardware Sensor ({OneCamera?.location}): Live feed and project progress
           </p>
 
           {/* AQI & Gases */}
