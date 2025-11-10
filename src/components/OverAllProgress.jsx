@@ -311,7 +311,7 @@ const handleExportAQI = async () => {
               title="Download all AQI data as Excel"
             >
               <Download size={16} />
-              {exportLoading ? 'Exporting...' : 'Export Excel'}
+              {exportLoading ? 'Exporting...' : 'Export CSV'}
             </button>
             <img
               src="https://www.aqi.in/media/sensor-ranges/aqi-moderate-level.svg"

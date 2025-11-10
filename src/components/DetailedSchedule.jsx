@@ -1,9 +1,10 @@
-import React, { useState } from "react";
+import React, { useRef, useState } from "react";
+import html2pdf from "html2pdf.js";
 // import LogManager from "../LogManager";
 // Updated CSS styles embedded in component
 const styles = `
 :root{
-  --ruda-primary: #0f4c81;
+  --ruda-primary: #5b4fc2;
   --ruda-accent: #ff7a59;
   --ruda-accent-2: #00b5ad;
   --ruda-muted: #6b7280;
@@ -21,22 +22,22 @@ const styles = `
   flex-direction:column;
 }
 .ruda-content{padding:16px}
-.ruda-header-container{display:flex;align-items:center;justify-content:space-between;padding:16px;background:linear-gradient(90deg,var(--ruda-primary),#114e7a);color:#fff;border-radius:10px;box-shadow:0 8px 24px rgba(15,76,129,0.06)}
-.ruda-title{font-size:18px;font-weight:700;margin:0}
-.ruda-table{width:100%;border-collapse:separate;border-spacing:0;background:var(--ruda-card);border-radius:10px;overflow:hidden;box-shadow:0 8px 30px rgba(8,12,20,0.04)}
-.ruda-table thead th{background:linear-gradient(180deg,rgba(15,76,129,0.03),rgba(15,76,129,0.01));padding:10px 8px;font-weight:700;color:var(--ruda-text);font-size:12px;border-bottom:1px solid rgba(15,76,129,0.04)}
-.ruda-month-header{background:transparent;color:var(--ruda-muted);font-size:12px;padding:8px;text-align:center}
-.ruda-cell{padding:10px 12px;border-bottom:1px solid rgba(15,76,129,0.03);background:transparent}
+.ruda-header-container{display:flex;align-items:center;justify-content:space-between;padding:20px 24px;background:linear-gradient(135deg,#5546d4,#7160e8);color:#fff;border-radius:0;box-shadow:none}
+.ruda-title{font-size:16px;font-weight:600;margin:0;letter-spacing:0.3px;text-transform:uppercase}
+.ruda-table{width:100%;border-collapse:separate;border-spacing:0;background:var(--ruda-card);border-radius:0;overflow:hidden;box-shadow:none;border:1px solid #e5e7eb}
+.ruda-table thead th{background:#f9fafb;padding:12px 16px;font-weight:600;color:#374151;font-size:11px;border-bottom:2px solid #e5e7eb;text-transform:uppercase;letter-spacing:0.5px}
+.ruda-month-header{background:#f9fafb;color:#6b7280;font-size:10px;padding:8px 4px;text-align:center;font-weight:600}
+.ruda-cell{padding:12px 16px;border-bottom:1px solid #f3f4f6;background:transparent}
 .phases-packages{width:360px;min-width:260px}
-.ruda-phase-header{font-weight:700;padding:12px}
-.ruda-phase-row:hover,.ruda-package-row:hover,.ruda-subpackage-row:hover{background:rgba(15,76,129,0.03)}
-.package-cell{padding-left:18px;font-weight:600;color:#1f3d7a}
-.subpackage-cell{padding-left:36px;font-weight:600;color:#c05221}
-.activity-cell{padding-left:52px;color:#0b4b8a}
-.ruda-timeline-cell{position:relative;height:42px;background:transparent}
+.ruda-phase-header{font-weight:600;padding:14px 16px;font-size:13px}
+.ruda-phase-row:hover,.ruda-package-row:hover,.ruda-subpackage-row:hover{opacity:0.95}
+.package-cell{padding-left:24px;font-weight:500;color:#1f2937}
+.subpackage-cell{padding-left:40px;font-weight:500;color:#374151}
+.activity-cell{padding-left:56px;color:#4b5563}
+.ruda-timeline-cell{position:relative;height:42px}
 .ruda-bar-wrapper{position:relative;height:42px}
-.ruda-bar{position:absolute;height:18px;border-radius:2px;top:50%;transform:translateY(-50%);border:1px solid #000;transition:transform .12s ease}
-.ruda-bar:hover{transform:translateY(-50%) scale(1.02)}
+.ruda-bar{position:absolute;height:20px;border-radius:4px;top:50%;transform:translateY(-50%);border:none;box-shadow:0 2px 6px rgba(0,0,0,0.15);transition:all .12s ease;opacity:0.98}
+.ruda-bar:hover{transform:translateY(-50%) scale(1.03);box-shadow:0 3px 10px rgba(0,0,0,0.25);opacity:1}
 /* Tooltip */
 .ruda-tooltip{position:absolute;bottom:calc(100% + 10px);left:50%;transform:translateX(-50%) translateY(6px) scale(.98);padding:12px 14px;background:linear-gradient(180deg,rgba(12,14,20,0.98),rgba(8,10,12,0.96));color:#fff;border-radius:12px;min-width:200px;max-width:420px;backdrop-filter:blur(6px);border:1px solid rgba(255,255,255,0.04);box-shadow:0 18px 48px rgba(3,8,23,0.55);opacity:0;pointer-events:none;transition:opacity 180ms ease,transform 220ms cubic-bezier(.2,.85,.25,1);display:flex;gap:12px;align-items:center}
 .ruda-tooltip::after{content:'';position:absolute;top:100%;left:50%;transform:translateX(-50%);border-width:8px 8px 0 8px;border-style:solid;border-color:rgba(12,14,20,0.98) transparent transparent transparent}
@@ -47,6 +48,11 @@ const styles = `
 .ruda-tooltip .ruda-tooltip-meta{font-size:12px;color:rgba(255,255,255,0.85);margin-top:2px}
 .ruda-wbs-icon{width:18px;height:18px;display:inline-flex;align-items:center;justify-content:center;margin-right:4px}
 @media (max-width:900px){.phases-packages{min-width:200px}.ruda-table{min-width:1100px}}
+/* Print/PDF helpers */
+.ruda-table { page-break-inside: auto; }
+.ruda-table tr { page-break-inside: avoid; page-break-after: auto; }
+.ruda-table thead { display: table-header-group; }
+.ruda-table tfoot { display: table-footer-group; }
 ` 
 // Inject styles
 if (typeof document !== "undefined") {
@@ -65,6 +71,19 @@ const DetailedSchedule = () => {
   const [expandedReaches, setExpandedReaches] = useState(new Set());
   const [selectedItem, setSelectedItem] = useState(null);
   const [showLog, setShowLog] = useState(false);
+  const [downloading, setDownloading] = useState(false);
+  const pdfRef = useRef(null);
+  
+  // 🎨 CUSTOMIZABLE COLOR PALETTE - Match reference image
+  // Customize these colors for each level of your schedule hierarchy
+  const levelColors = {
+    0: { bg: "#d1f5e8", bar: "#4a5568" }, // Project level - light mint / dark gray bar
+    1: { bg: "#80e5b4", bar: "#ffffff" }, // Level 1 - green bg / white bar
+    2: { bg: "#ffb84d", bar: "#ffffff" }, // Level 2 - orange bg / white bar
+    3: { bg: "#5b9aff", bar: "#ffffff" }, // Level 3 - blue bg / white bar
+    4: { bg: "#ff6b6b", bar: "#ffffff" }, // Level 4 - red bg / white bar
+    5: { bg: "#b4e7ff", bar: "#ffffff" }, // Level 5+ - light blue bg / white bar
+  };
   // Tooltip position handlers: keep tooltip inside the timeline cell and add small interactive movement
   const handleTooltipMove = (e) => {
     try {
@@ -888,8 +907,8 @@ const DetailedSchedule = () => {
       const itemDurationDays = Math.max(1, Math.ceil((endDate - startDate) / msPerDay));
       const leftPct = (itemStartOffset / totalDays) * 100;
       const widthPct = (itemDurationDays / totalDays) * 100;
-      // All bars use black fill like in the reference image
-      const barColor = "#000000";
+      // Bar color: white for non-leaf (has children), colored for leaf (activities)
+      const barColor = isLeaf ? (levelColors[level]?.bg || levelColors[1].bg) : (levelColors[level]?.bar || levelColors[1].bar);
       // tooltip with inline icon and meta
       return (
         <div
@@ -921,8 +940,8 @@ const DetailedSchedule = () => {
     const start = item.timeline.findIndex((v) => v === 1);
     const duration = item.timeline.filter((v) => v === 1).length;
     if (start === -1 || duration === 0) return null;
-    // All bars use black fill like in the reference image
-    const barColor = "#000000";
+    // Bar color: white for non-leaf (has children), colored for leaf (activities)
+    const barColor = isLeaf ? (levelColors[level]?.bg || levelColors[1].bg) : (levelColors[level]?.bar || levelColors[1].bar);
     return (
       <div
         className="ruda-bar-wrapper"
@@ -945,18 +964,12 @@ const DetailedSchedule = () => {
       </div>
     );
   };
-  // Return a color depending on nesting level and key/name so each sub can get a distinct color.
+  // Return a color depending on nesting level - uses customizable palette
   const getColorForLevel = (level = 0, key = "") => {
-    // Professional palette (navy, teal, amber, purple, slate)
-    const base = ["#0b3d91", "#80ff80", "#ffff00", "#0000ff", "#ff0000","#80ffff"];
-    if (level < base.length) return base[level];
-    // derive color from key hash for deeper levels
-    let hash = 0;
-    for (let i = 0; i < key.length; i++) {
-      hash = key.charCodeAt(i) + ((hash << 5) - hash);
-    }
-    const hue = Math.abs(hash) % 360;
-    return `hsl(${hue} 60% 45%)`;
+    // Use the customizable color palette defined above
+    if (levelColors[level]) return levelColors[level].bg;
+    // For deeper levels beyond the palette, use a fallback color
+    return levelColors[5]?.bg || "#e5e7eb";
   };
   // Auto-compute text color based on background brightness for optimal contrast
   const getTextForLevel = (level = 0) => {
@@ -1045,7 +1058,7 @@ const DetailedSchedule = () => {
             <td className="ruda-cell right">{st.duration}</td>
             <td className="ruda-cell right">{st.start_date}</td>
             <td className="ruda-cell right">{st.end_date}</td>
-            <td colSpan={totalMonths} className="ruda-timeline-cell" style={{ backgroundColor: '#fff' }}>
+            <td colSpan={totalMonths} className="ruda-timeline-cell" style={{ backgroundColor: (st.subtasks && st.subtasks.length > 0) ? backgroundColor : '#ffffff' }}>
               {renderTimeline ? renderTimeline(st, level, key, !(st.subtasks && st.subtasks.length > 0)) : null}
             </td>
           </tr>
@@ -1126,9 +1139,86 @@ const DetailedSchedule = () => {
     <div className="ruda-container">
       <div className="ruda-header-container">
         <h1 className="ruda-title">{data[0].project}</h1>
+        <button
+          onClick={async () => {
+            if (!pdfRef.current || downloading) return;
+            try {
+              setDownloading(true);
+
+              // 1) Backup current expanded states
+              const prevPhases = new Set(expandedPhases);
+              const prevPackages = new Set(expandedPackages);
+              const prevSubpackages = new Set(expandedSubpackages);
+
+              // 2) Expand everything so the PDF includes full WBS with activities
+              const allPhases = new Set();
+              const allPackages = new Set();
+              const allSubpackages = new Set();
+
+              data.forEach((project, pIndex) => {
+                allPhases.add(pIndex);
+                (project.tasks || []).forEach((task, tIndex) => {
+                  const pkgKey = `${pIndex}-${tIndex}`;
+                  if (task.subtasks && task.subtasks.length > 0) {
+                    allPackages.add(pkgKey);
+                  }
+                  const traverse = (subs, parentKey) => {
+                    (subs || []).forEach((st, i) => {
+                      const key = `${parentKey}-${i}`;
+                      if (st.subtasks && st.subtasks.length > 0) {
+                        allSubpackages.add(key);
+                        traverse(st.subtasks, key);
+                      }
+                    });
+                  };
+                  traverse(task.subtasks, pkgKey);
+                });
+              });
+
+              setExpandedPhases(allPhases);
+              setExpandedPackages(allPackages);
+              setExpandedSubpackages(allSubpackages);
+
+              // Wait for the DOM to render expanded content
+              await new Promise((r) => setTimeout(r, 300));
+
+              const opt = {
+                margin: [8, 8, 8, 8],
+                filename: "Detailed-Schedule.pdf",
+                image: { type: "jpeg", quality: 0.98 },
+                html2canvas: { scale: 2, useCORS: true },
+                jsPDF: { unit: "mm", format: "a4", orientation: "landscape" },
+                pagebreak: { mode: ["css", "legacy"] },
+              };
+              await html2pdf().set(opt).from(pdfRef.current).save();
+
+              // 3) Restore previous expanded states
+              setExpandedPhases(prevPhases);
+              setExpandedPackages(prevPackages);
+              setExpandedSubpackages(prevSubpackages);
+            } catch (err) {
+              console.error("PDF export failed", err);
+            } finally {
+              setDownloading(false);
+            }
+          }}
+          style={{
+            background: "#fff",
+            color: "#0f4c81",
+            border: "1px solid rgba(15,76,129,0.25)",
+            padding: "8px 12px",
+            borderRadius: 8,
+            fontWeight: 600,
+            cursor: downloading ? "not-allowed" : "pointer",
+            boxShadow: "0 6px 18px rgba(15,76,129,0.15)",
+          }}
+          disabled={downloading}
+        >
+          {downloading ? "Preparing PDF…" : "Download PDF"}
+        </button>
       </div>
       <div className="ruda-content">
-        <div style={{ position: "relative" }}>
+        <div style={{ position: "relative" }} ref={pdfRef}>
           {/* Move vertical lines outside the table */}
           {/* {[263, 514, 763, 1014, 1264].map((left, i) => (
           <div
@@ -1147,42 +1237,42 @@ const DetailedSchedule = () => {
           <table className="ruda-table">
             <thead>
               <tr>
-                <th className="ruda-header phases-packages" rowSpan="2">
+                <th className="ruda-header phases-packages text-start" rowSpan="2">
                   Activity Name
                 </th>
-                <th className="ruda-header amount-column" rowSpan="2">
+                <th className="ruda-header text-end amount-column" rowSpan="2">
                   Amount
                   <br />
                   <small>(PKR, M)</small>
                 </th>
-                <th className="ruda-header duration-column" rowSpan="2">
+                <th className="ruda-header text-end duration-column" rowSpan="2">
                   Duration
                   <br />
                   <small>(Days)</small>
                 </th>
-                <th className="ruda-header actual-start-column" rowSpan="2">
+                <th className="ruda-header actual-start-column whitespace-nowrap" rowSpan="2">
                   Start Date
                 </th>
-                <th className="ruda-header actual-finish-column" rowSpan="2">
+                <th className="ruda-header actual-finish-column whitespace-nowrap" rowSpan="2">
                   Finish Date
                 </th>
                 {/* Progress column removed */}
                 
                 {yearGroups.length
                   ? yearGroups.map((yg, idx) => (
-                      <th key={idx} className="ruda-header" colSpan={yg.span}>
+                      <th key={idx} className="ruda-header whitespace-nowrap" colSpan={yg.span}>
                         {"20" + yg.year}
                       </th>
                     ))
                   : [...Array(5)].map((_, i) => (
-                      <th key={i} className="ruda-header" colSpan="12">
+                      <th key={i} className="ruda-header whitespace-nowrap" colSpan="12">
                         FY {25 + i}-{26 + i}
                       </th>
                     ))}
               </tr>
               <tr>
                 {months.map((month, index) => (
-                  <th key={index} className="ruda-month-header">
+                  <th key={index} className="ruda-month-header whitespace-nowrap">
                     {month}
                   </th>
                 ))}
@@ -1192,7 +1282,7 @@ const DetailedSchedule = () => {
               {data.map((project, pIndex) => (
                 <React.Fragment key={pIndex}>
                   {/* Project Row */}
-                  <tr className="ruda-phase-row cursor-pointer bg-[#9c9c9ce7]">
+                  <tr className="ruda-phase-row cursor-pointer bg-[#9c9c9cbd]">
                     <td className="ruda-phase-header">
                       <button
                         className="ruda-icon-btn"
@@ -1235,8 +1325,7 @@ const DetailedSchedule = () => {
                     <td className="ruda-phase-header right">
                       {project.end_date}
                     </td>
-                    <td className="ruda-phase-header right">-</td>
-                      <td colSpan={totalMonths} className="ruda-timeline-cell" style={{ backgroundColor: '#fff' }}>
+                      <td colSpan={totalMonths} className="ruda-timeline-cell" style={{ backgroundColor: getColorForLevel(0) }}>
                       {renderTimeline ? renderTimeline(project, 0, `${pIndex}`, !(project.tasks && project.tasks.length > 0)) : null}
                     </td>
                   </tr>
@@ -1287,7 +1376,7 @@ const DetailedSchedule = () => {
                           <td className="ruda-cell right">{task.start_date}</td>
                           <td className="ruda-cell right">{task.end_date}</td>
 
-                          <td colSpan={totalMonths} className="ruda-timeline-cell" style={{ backgroundColor: '#fff' }}>
+                          <td colSpan={totalMonths} className="ruda-timeline-cell" style={{ backgroundColor: (task.subtasks && task.subtasks.length > 0) ? getColorForLevel(1) : '#ffffff' }}>
                             {renderTimeline ? renderTimeline(task, 1, `${pIndex}-${tIndex}`, !(task.subtasks && task.subtasks.length > 0)) : null}
                           </td>
                         </tr>
