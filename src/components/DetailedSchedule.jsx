@@ -22,21 +22,26 @@ const styles = `
   flex-direction:column;
 }
 .ruda-content{padding:16px}
-.ruda-header-container{display:flex;align-items:center;justify-content:space-between;padding:20px 24px;background:linear-gradient(135deg,#5546d4,#7160e8);color:#fff;border-radius:0;box-shadow:none}
-.ruda-title{font-size:16px;font-weight:600;margin:0;letter-spacing:0.3px;text-transform:uppercase}
-.ruda-table{width:100%;border-collapse:separate;border-spacing:0;background:var(--ruda-card);border-radius:0;overflow:hidden;box-shadow:none;border:1px solid #e5e7eb}
-.ruda-table thead th{background:#f9fafb;padding:12px 16px;font-weight:600;color:#374151;font-size:11px;border-bottom:2px solid #e5e7eb;text-transform:uppercase;letter-spacing:0.5px}
-.ruda-month-header{background:#f9fafb;color:#6b7280;font-size:10px;padding:8px 4px;text-align:center;font-weight:600}
-.ruda-cell{padding:12px 16px;border-bottom:1px solid #f3f4f6;background:transparent}
-.phases-packages{width:360px;min-width:260px}
-.ruda-phase-header{font-weight:600;padding:14px 16px;font-size:13px}
+.ruda-header-container{display:flex;align-items:center;justify-content:space-between;padding:20px 24px;background:linear-gradient(135deg,#5546d4,#7160e8);color:#fff;border-radius:0;box-shadow:none;gap:20px}
+.ruda-header-left{display:flex;align-items:center;gap:16px;flex:1}
+.ruda-header-logo{height:40px;width:auto;object-fit:contain}
+.ruda-title{font-size:16px;font-weight:600;margin:0;letter-spacing:0.3px;text-transform:uppercase;flex:1}
+.ruda-table-wrapper{width:100%;overflow-x:auto;position:relative}
+.ruda-table{width:100%;border-collapse:separate;border-spacing:0;background:var(--ruda-card);border-radius:0;box-shadow:none;border:1px solid #e5e7eb}
+.ruda-table thead th{background:#f9fafb;padding:12px 16px;font-weight:600;color:#374151;font-size:11px;border-bottom:2px solid #e5e7eb;text-transform:uppercase;letter-spacing:0.5px;position:sticky;top:0;z-index:10;white-space:nowrap}
+.ruda-month-header{background:#f9fafb;color:#6b7280;font-size:10px;padding:8px 4px;text-align:center;font-weight:600;position:sticky;top:0;z-index:10;white-space:nowrap}
+.ruda-cell{padding:8px 12px;border-bottom:1px solid #f3f4f6;background:transparent;white-space:nowrap}
+.ruda-cell.right{text-align:right}
+.phases-packages{width:360px;min-width:260px;position:sticky;left:0;z-index:5;background:#fff}
+.ruda-table tbody .phases-packages{box-shadow:2px 0 4px rgba(0,0,0,0.08)}
+.ruda-phase-header{font-weight:600;padding:14px 16px;font-size:13px;position:sticky;left:0;z-index:5}
 .ruda-phase-row:hover,.ruda-package-row:hover,.ruda-subpackage-row:hover{opacity:0.95}
-.package-cell{padding-left:24px;font-weight:500;color:#1f2937}
-.subpackage-cell{padding-left:40px;font-weight:500;color:#374151}
-.activity-cell{padding-left:56px;color:#4b5563}
+.package-cell{padding-left:24px;font-weight:500;color:#1f2937;position:sticky;left:0;z-index:5;box-shadow:2px 0 4px rgba(0,0,0,0.08)}
+.subpackage-cell{padding-left:40px;font-weight:500;color:#374151;position:sticky;left:0;z-index:5;box-shadow:2px 0 4px rgba(0,0,0,0.08)}
+.activity-cell{padding-left:56px;color:#4b5563;position:sticky;left:0;z-index:5;box-shadow:2px 0 4px rgba(0,0,0,0.08)}
 .ruda-timeline-cell{position:relative;height:42px}
 .ruda-bar-wrapper{position:relative;height:42px}
-.ruda-bar{position:absolute;height:20px;border-radius:4px;top:50%;transform:translateY(-50%);border:none;box-shadow:0 2px 6px rgba(0,0,0,0.15);transition:all .12s ease;opacity:0.98}
+.ruda-bar{position:absolute;height:20px;border-radius:50px;top:50%;transform:translateY(-50%);border:none;box-shadow:0 2px 6px rgba(0,0,0,0.15);transition:all .12s ease;opacity:0.98}
 .ruda-bar:hover{transform:translateY(-50%) scale(1.03);box-shadow:0 3px 10px rgba(0,0,0,0.25);opacity:1}
 /* Tooltip */
 .ruda-tooltip{position:absolute;bottom:calc(100% + 10px);left:50%;transform:translateX(-50%) translateY(6px) scale(.98);padding:12px 14px;background:linear-gradient(180deg,rgba(12,14,20,0.98),rgba(8,10,12,0.96));color:#fff;border-radius:12px;min-width:200px;max-width:420px;backdrop-filter:blur(6px);border:1px solid rgba(255,255,255,0.04);box-shadow:0 18px 48px rgba(3,8,23,0.55);opacity:0;pointer-events:none;transition:opacity 180ms ease,transform 220ms cubic-bezier(.2,.85,.25,1);display:flex;gap:12px;align-items:center}
@@ -47,12 +52,52 @@ const styles = `
 .ruda-tooltip .ruda-tooltip-title{font-weight:700;font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:300px}
 .ruda-tooltip .ruda-tooltip-meta{font-size:12px;color:rgba(255,255,255,0.85);margin-top:2px}
 .ruda-wbs-icon{width:18px;height:18px;display:inline-flex;align-items:center;justify-content:center;margin-right:4px}
+/* Ensure sticky cells inherit row background colors */
+.ruda-phase-row td:first-child{background:inherit}
+.ruda-package-row td:first-child{background:inherit}
+.ruda-subpackage-row td:first-child{background:inherit}
 @media (max-width:900px){.phases-packages{min-width:200px}.ruda-table{min-width:1100px}}
 /* Print/PDF helpers */
 .ruda-table { page-break-inside: auto; }
 .ruda-table tr { page-break-inside: avoid; page-break-after: auto; }
 .ruda-table thead { display: table-header-group; }
 .ruda-table tfoot { display: table-footer-group; }
+/* PDF Export specific styles */
+@media print, (prefers-color-scheme: pdf) {
+  .ruda-table-wrapper{overflow-x:visible!important;overflow-y:visible!important}
+  .phases-packages,.ruda-phase-header,.package-cell,.subpackage-cell,.activity-cell{position:relative!important;left:auto!important;box-shadow:none!important}
+  .ruda-table thead th{position:relative!important;top:auto!important;white-space:nowrap!important}
+  .ruda-month-header{position:relative!important;top:auto!important;white-space:nowrap!important}
+  .ruda-tooltip{display:none!important}
+  .ruda-cell{white-space:nowrap!important}
+  .ruda-table{table-layout:auto!important;width:auto!important}
+}
+.pdf-export .ruda-table-wrapper{overflow-x:visible!important;overflow-y:visible!important}
+.pdf-export .phases-packages,.pdf-export .ruda-phase-header,.pdf-export .package-cell,.pdf-export .subpackage-cell,.pdf-export .activity-cell{position:relative!important;left:auto!important;box-shadow:none!important;background:inherit!important}
+.pdf-export .ruda-table thead th{position:relative!important;top:auto!important;white-space:nowrap!important;padding:10px 12px!important;vertical-align:middle!important;text-align:center!important}
+.pdf-export .ruda-month-header{position:relative!important;top:auto!important;white-space:nowrap!important;padding:8px 4px!important;vertical-align:middle!important;text-align:center!important}
+.pdf-export .ruda-tooltip{display:none!important}
+.pdf-export .ruda-cell{white-space:nowrap!important;padding:10px 12px!important;vertical-align:middle!important}
+.pdf-export .ruda-cell.right{text-align:right!important}
+.pdf-export .ruda-table{table-layout:fixed!important;width:100%!important;border-collapse:collapse!important}
+.pdf-export .ruda-phase-header{white-space:normal!important;padding:10px 12px!important;vertical-align:middle!important;text-align:left!important}
+.pdf-export .package-cell{white-space:normal!important;padding:10px 12px!important;padding-left:24px!important;vertical-align:middle!important;text-align:left!important}
+.pdf-export .subpackage-cell{white-space:normal!important;padding:10px 12px!important;vertical-align:middle!important;text-align:left!important}
+.pdf-export .activity-cell{padding:10px 12px!important;vertical-align:middle!important;text-align:left!important}
+.pdf-export .ruda-phase-row,.pdf-export .ruda-package-row,.pdf-export .ruda-subpackage-row{height:auto!important}
+.pdf-export .ruda-timeline-cell{height:50px!important;vertical-align:middle!important;padding:10px 4px!important}
+.pdf-export .ruda-bar-wrapper{height:50px!important;display:flex!important;align-items:center!important}
+.pdf-export .ruda-bar{height:20px!important}
+/* Keep PDF styling consistent with on-screen layout: restore original paddings/heights */
+.pdf-export .ruda-timeline-cell{height:42px!important;padding:8px 12px!important}
+.pdf-export .ruda-bar-wrapper{height:42px!important}
+.pdf-export .ruda-cell{padding:8px 12px!important}
+.pdf-export .ruda-table thead th{padding:12px 16px!important}
+.pdf-export .ruda-phase-header{padding:14px 16px!important}
+.pdf-export .package-cell{padding-left:24px!important}
+.pdf-export .ruda-phase-row,.pdf-export .ruda-package-row,.pdf-export .ruda-subpackage-row{height:auto!important}
+.pdf-export .ruda-phase-header,.pdf-export .package-cell,.pdf-export .subpackage-cell,.pdf-export .activity-cell{word-break:keep-all!important;overflow-wrap:normal!important}
+.pdf-export .ruda-table thead th,.pdf-export .ruda-table tbody td{box-sizing:border-box!important}
 ` 
 // Inject styles
 if (typeof document !== "undefined") {
@@ -60,7 +105,6 @@ if (typeof document !== "undefined") {
   styleSheet.innerText = styles;
   document.head.appendChild(styleSheet);
 }
-
 const DetailedSchedule = () => {
   const [expandedPhases, setExpandedPhases] = useState(new Set([0]));
   const [expandedPackages, setExpandedPackages] = useState(new Set());
@@ -78,11 +122,11 @@ const DetailedSchedule = () => {
   // Customize these colors for each level of your schedule hierarchy
   const levelColors = {
     0: { bg: "#d1f5e8", bar: "#4a5568" }, // Project level - light mint / dark gray bar
-    1: { bg: "#80e5b4", bar: "#ffffff" }, // Level 1 - green bg / white bar
-    2: { bg: "#ffb84d", bar: "#ffffff" }, // Level 2 - orange bg / white bar
-    3: { bg: "#5b9aff", bar: "#ffffff" }, // Level 3 - blue bg / white bar
-    4: { bg: "#ff6b6b", bar: "#ffffff" }, // Level 4 - red bg / white bar
-    5: { bg: "#b4e7ff", bar: "#ffffff" }, // Level 5+ - light blue bg / white bar
+    1: { bg: "#afedcf", bar: "#1fdd81" }, // Level 1 - green bg / white bar
+    2: { bg: "#ffb84d", bar: "#ef9000" }, // Level 2 - orange bg / white bar
+    3: { bg: "#5b9aff", bar: "#005aeb" }, // Level 3 - blue bg / white bar
+    4: { bg: "#ff6b6b", bar: "#e73737" }, // Level 4 - red bg / white bar
+    5: { bg: "#b4e7ff", bar: "#6fcefb" }, // Level 5+ - light blue bg / white bar
   };
   // Tooltip position handlers: keep tooltip inside the timeline cell and add small interactive movement
   const handleTooltipMove = (e) => {
@@ -791,7 +835,7 @@ const DetailedSchedule = () => {
                                 {
                                   name:"Mechanical Equipment & Accessories",
                                   duration:30,
-                                  start_date:"15-Feb-25",
+                                  start_date:"15-Feb-26",
                                   end_date:"16-Mar-26",
                                 },
                                 {
@@ -907,8 +951,8 @@ const DetailedSchedule = () => {
       const itemDurationDays = Math.max(1, Math.ceil((endDate - startDate) / msPerDay));
       const leftPct = (itemStartOffset / totalDays) * 100;
       const widthPct = (itemDurationDays / totalDays) * 100;
-      // Bar color: white for non-leaf (has children), colored for leaf (activities)
-      const barColor = isLeaf ? (levelColors[level]?.bg || levelColors[1].bg) : (levelColors[level]?.bar || levelColors[1].bar);
+      // Bar color: use the 'bar' color from levelColors (e.g., #1fdd81 for green, #ffffff for others)
+      const barColor = levelColors[level]?.bar || levelColors[1].bar;
       // tooltip with inline icon and meta
       return (
         <div
@@ -930,6 +974,9 @@ const DetailedSchedule = () => {
               <div className="ruda-tooltip-meta">{item.start_date || "-"} → {item.end_date || "-"} · {item.duration ?? "-"} days</div>
             </div>
           </div>
+          {/* Full white background bar from project start to end */}
+          <div className="ruda-bar" style={{ left: '0%', width: '100%', background: '#ffffff', minWidth: '100%', opacity: 0.9 }} />
+          {/* Actual colored bar for the activity duration */}
           <div className="ruda-bar" style={{ left: `${leftPct}%`, width: `${widthPct}%`, background: barColor, minWidth: '6px' }} />
         </div>
       );
@@ -940,8 +987,8 @@ const DetailedSchedule = () => {
     const start = item.timeline.findIndex((v) => v === 1);
     const duration = item.timeline.filter((v) => v === 1).length;
     if (start === -1 || duration === 0) return null;
-    // Bar color: white for non-leaf (has children), colored for leaf (activities)
-    const barColor = isLeaf ? (levelColors[level]?.bg || levelColors[1].bg) : (levelColors[level]?.bar || levelColors[1].bar);
+    // Bar color: use the 'bar' color from levelColors (e.g., #1fdd81 for green, #ffffff for others)
+    const barColor = levelColors[level]?.bar || levelColors[1].bar;
     return (
       <div
         className="ruda-bar-wrapper"
@@ -960,6 +1007,9 @@ const DetailedSchedule = () => {
             <div className="ruda-tooltip-meta">{item.duration ?? "-"} days</div>
           </div>
         </div>
+        {/* Full white background bar */}
+        <div className="ruda-bar" style={{ left: '0', width: '100%', background: '#ffffff', opacity: 0.9 }} />
+        {/* Actual colored bar for the activity duration */}
         <div className="ruda-bar" style={{ left: `${start * monthWidth}px`, width: `${duration * monthWidth}px`, background: barColor }} />
       </div>
     );
@@ -1138,7 +1188,10 @@ const DetailedSchedule = () => {
   return (
     <div className="ruda-container">
       <div className="ruda-header-container">
-        <h1 className="ruda-title">{data[0].project}</h1>
+        <div className="ruda-header-left">
+          {/* Add your logo here: <img src="/path/to/logo.png" alt="Logo" className="ruda-header-logo" /> */}
+          <h1 className="ruda-title">{data[0].project}</h1>
+        </div>
         <button
           onClick={async () => {
             if (!pdfRef.current || downloading) return;
@@ -1182,15 +1235,48 @@ const DetailedSchedule = () => {
               // Wait for the DOM to render expanded content
               await new Promise((r) => setTimeout(r, 300));
 
+              // Add PDF export class to remove sticky positioning for PDF
+              if (pdfRef.current) {
+                pdfRef.current.classList.add('pdf-export');
+              }
+
+              // Wait a bit for CSS to apply
+              await new Promise((r) => setTimeout(r, 200));
+
+              // Force container to its full scroll width so html2canvas captures layout like on-screen
+              if (pdfRef.current) {
+                try {
+                  const scrollW = pdfRef.current.scrollWidth;
+                  if (scrollW && scrollW > pdfRef.current.clientWidth) {
+                    pdfRef.current.style.width = scrollW + 'px';
+                  }
+                } catch (e) {
+                  // ignore
+                }
+              }
+
               const opt = {
-                margin: [8, 8, 8, 8],
+                margin: [5, 5, 5, 5],
                 filename: "Detailed-Schedule.pdf",
                 image: { type: "jpeg", quality: 0.98 },
-                html2canvas: { scale: 2, useCORS: true },
-                jsPDF: { unit: "mm", format: "a4", orientation: "landscape" },
-                pagebreak: { mode: ["css", "legacy"] },
+                html2canvas: { 
+                  scale: 2, 
+                  useCORS: true,
+                  logging: false,
+                  letterRendering: true,
+                  allowTaint: true,
+                  backgroundColor: '#ffffff'
+                },
+                jsPDF: { unit: "mm", format: "a3", orientation: "landscape" },
+                pagebreak: { mode: ["avoid-all", "css", "legacy"] },
               };
               await html2pdf().set(opt).from(pdfRef.current).save();
+
+              // Clean up forced width and remove PDF export class
+              if (pdfRef.current) {
+                try { pdfRef.current.style.width = ''; } catch (e) {}
+                pdfRef.current.classList.remove('pdf-export');
+              }
 
               // 3) Restore previous expanded states
               setExpandedPhases(prevPhases);
@@ -1234,6 +1320,7 @@ const DetailedSchedule = () => {
             }}
           />
         ))} */}
+          <div className="ruda-table-wrapper">
           <table className="ruda-table">
             <thead>
               <tr>
@@ -1282,7 +1369,9 @@ const DetailedSchedule = () => {
               {data.map((project, pIndex) => (
                 <React.Fragment key={pIndex}>
                   {/* Project Row */}
-                  <tr className="ruda-phase-row cursor-pointer bg-[#9c9c9cbd]">
+                  <tr 
+                  className="ruda-phase-row cursor-pointer"
+                 >
                     <td className="ruda-phase-header">
                       <button
                         className="ruda-icon-btn"
@@ -1309,20 +1398,20 @@ const DetailedSchedule = () => {
                         return (
                           <div style={{ display: "inline-flex", alignItems: "center", gap: 6 }}>
                             <span className="ruda-wbs-icon">{renderIconSVG(0, false, 18, textColor)}</span>
-                            <span style={{ lineHeight: 1.1, color: textColor }}>{project.project}</span>
+                            <span style={{ lineHeight: 1.1, color: textColor }}>{project.project.split(" ").slice(0, 5).join(" ")}...</span>
                             {renderChildIndicator(hasChildren, expandedPhases.has(pIndex), textColor)}
                           </div>
                         );
                       })()}
                     </td>
-                    <td className="ruda-phase-header right">-</td>
-                    <td className="ruda-phase-header right">
+                    <td className="ruda-phase-header text-end">-</td>
+                    <td className="ruda-phase-header text-end">
                       {project.duration}
                     </td>
-                    <td className="ruda-phase-header right">
+                    <td className="ruda-phase-header text-end">
                       {project.start_date}
                     </td>
-                    <td className="ruda-phase-header right">
+                    <td className="ruda-phase-header text-end">
                       {project.end_date}
                     </td>
                       <td colSpan={totalMonths} className="ruda-timeline-cell" style={{ backgroundColor: getColorForLevel(0) }}>
@@ -1390,16 +1479,16 @@ const DetailedSchedule = () => {
               ))}
 
               <tr>
-                <td className="ruda-total-cell">Total</td>
-                <td className="ruda-total-cell right">0</td>
-                <td className="ruda-total-cell right">-</td>
-                <td className="ruda-total-cell right">-</td>
-                <td className="ruda-total-cell right">-</td>
-                <td className="ruda-total-cell right">-</td>
+                <td className="ruda-total-cell text-end">Total</td>
+                <td className="ruda-total-cell text-end">0</td>
+                <td className="ruda-total-cell text-end">-</td>
+                <td className="ruda-total-cell text-end">-</td>
+                <td className="ruda-total-cell text-end">-</td>
                 <td colSpan={totalMonths} className="ruda-total-cell"></td>
               </tr>
             </tbody>
           </table>
+          </div>
         </div>
         {selectedItem && (
           <div className="ruda-selected-info">
@@ -1411,5 +1500,6 @@ const DetailedSchedule = () => {
     </div>
   );
 };
+
 
 export default DetailedSchedule;
