@@ -145,7 +145,6 @@ const handleExportAQI = async () => {
     setExportLoading(false)
   }
 }
-
   return (
     <div className="min-h-screen flex flex-col gap-9 p-8 mx-5 w-full rounded-md bg-[#ffffff69]">
       <h1 className="text-3xl font-bold flex items-center gap-1"><GiProgression size="30"/> Progress</h1>
@@ -189,9 +188,9 @@ const handleExportAQI = async () => {
                 Actual vs Planned Progress
               </p>
             </div>
-            <div className="flex flex-col w-full flex-wrap gap-4">
+            <div className="flex flex-col w-full h-auto flex-wrap gap-4">
               {/* <!-- SPI Box --> */}
-              <div className="bg-white w-full shadow-md rounded-lg p-4 text-center">
+              <div className="bg-white w-full shadow-md rounded-lg p-4  text-center">
                 <div className="text-lg font-semibold mb-2 text-center">
                   SPI (Projection)
                 </div>

@@ -83,7 +83,7 @@ const LiveProgress = () => {
         </div>
       ) : null}
       <div className="flex gap-5">
-        <div className="flex flex-col gap-3 w-[250px] xl:w-[300px] bg-white h-[calc(100vh-134px)] p-5">
+        <div className="flex flex-col gap-3 w-[250px] xl:w-[300px] bg-white h-[calc(100vh-134px)] p-5 overflow-y-scroll">
           <div className="flex flex-col gap-1">
             <h2 className="text-xs font-medium">
               <Link

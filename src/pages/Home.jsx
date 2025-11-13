@@ -63,7 +63,7 @@ export default function Home() {
   }, []);
   return (
     <div
-      className="min-h-screen bg-cover bg-center"
+      className="min-h-[calc(100vh-56px)] bg-cover bg-center"
       style={{
         backgroundImage: "url('Sunrise.jpg')",
       }}
