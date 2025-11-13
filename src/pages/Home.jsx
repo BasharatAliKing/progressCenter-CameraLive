@@ -69,10 +69,10 @@ export default function Home() {
       }}
     >
       {/* Content */}
-      <div className="max-w-7xl mx-auto px-6 py-10">
+      <div className=" mx-auto px-6 py-10">
         <BarComponent />
         {/* Cards Grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6">
           {cameras.map((project, index) => (
             <Link
               to={`/camera/${project._id}`}
