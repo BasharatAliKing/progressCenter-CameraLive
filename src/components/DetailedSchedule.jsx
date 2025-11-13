@@ -1,4 +1,4 @@
-import React, { useRef, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import html2pdf from "html2pdf.js";
 // import LogManager from "../LogManager";
 // Updated CSS styles embedded in component
@@ -105,7 +105,9 @@ if (typeof document !== "undefined") {
   styleSheet.innerText = styles;
   document.head.appendChild(styleSheet);
 }
-const DetailedSchedule = () => {
+const API_URL = import.meta.env.VITE_API_URL; // ✅ Correct way in Vite
+ const DetailedSchedule = () => {
+  const [data,setData]=useState([]);
   const [expandedPhases, setExpandedPhases] = useState(new Set([0]));
   const [expandedPackages, setExpandedPackages] = useState(new Set());
   const [expandedSubpackages, setExpandedSubpackages] = useState(new Set());
@@ -117,7 +119,150 @@ const DetailedSchedule = () => {
   const [showLog, setShowLog] = useState(false);
   const [downloading, setDownloading] = useState(false);
   const pdfRef = useRef(null);
-  
+  //console.log(data);
+  // import data from api schedule here
+  useEffect(()=>{
+     const fetchSchedule=async()=>{
+        try{
+          if (!API_URL) {
+            console.warn('VITE_API_URL is not set; falling back to relative fetch which may fail without a dev proxy.');
+          }
+          const res=await fetch(`${API_URL}/schedule`);
+          const json=await res.json();
+          console.log(json);
+          // Normalize various possible API shapes into our expected array-of-projects
+          const monthMap = { Jan:0, Feb:1, Mar:2, Apr:3, May:4, Jun:5, Jul:6, Aug:7, Sep:8, Oct:9, Nov:10, Dec:11 };
+          const parseDate = (s) => {
+            if (!s) return null;
+            if (s instanceof Date) return isNaN(s) ? null : s;
+            if (typeof s !== 'string') return null;
+            const str = s.trim();
+            // ISO-like: YYYY-MM-DD or YYYY-MM-DDTHH:mm:ssZ
+            const isoMatch = str.match(/^(\d{4})-(\d{2})-(\d{2})/);
+            if (isoMatch) {
+              const yy = parseInt(isoMatch[1], 10);
+              const mm = parseInt(isoMatch[2], 10) - 1;
+              const dd = parseInt(isoMatch[3], 10);
+              return new Date(yy, mm, dd);
+            }
+            const parts = str.split(/[-\/\s]+/);
+            if (parts.length < 3) return null;
+            const day = parseInt(parts[0], 10) || 1;
+            const m = monthMap[parts[1]] ?? monthMap[parts[1]?.slice(0,3)];
+            if (m === undefined) return null;
+            let yy = parseInt(parts[2], 10);
+            if (yy < 100) yy = 2000 + yy;
+            return new Date(yy, m, day);
+          };
+          const fmt = (d) => {
+            if (!(d instanceof Date) || isNaN(d)) return '';
+            const dd = String(d.getDate()).padStart(2,'0');
+            const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+            const mm = months[d.getMonth()];
+            const yy = String(d.getFullYear()).slice(-2);
+            return `${dd}-${mm}-${yy}`;
+          };
+          const computeSpanFromChildren = (children = []) => {
+            let minD = null, maxD = null;
+            children.forEach(c => {
+              const s = parseDate(c.start_date);
+              const e = parseDate(c.end_date);
+              if (s && (!minD || s < minD)) minD = s;
+              if (e && (!maxD || e > maxD)) maxD = e;
+            });
+            return { minD, maxD };
+          };
+          const ensureNode = (node) => {
+            if (!node) return null;
+            const subtasks = node.subtasks || node.tasks || [];
+            const normalizedChildren = Array.isArray(subtasks) ? subtasks.map(ensureNode).filter(Boolean) : [];
+
+            let s = parseDate(node.start_date);
+            let e = parseDate(node.end_date);
+            if ((!s || !e) && normalizedChildren.length) {
+              const { minD, maxD } = computeSpanFromChildren(normalizedChildren);
+              s = s || minD;
+              e = e || maxD;
+            }
+            let duration = node.duration;
+            if ((!duration || isNaN(duration)) && s && e) {
+              const msPerDay = 1000*60*60*24;
+              // Inclusive calculation: end - start + 1 day
+              duration = Math.max(1, Math.round((e - s)/msPerDay) + 1);
+            }
+            return {
+              name: node.name || node.project || 'Untitled',
+              project: node.project, // keep if present
+              start_date: s ? fmt(s) : (node.start_date || ''),
+              end_date: e ? fmt(e) : (node.end_date || ''),
+              duration: typeof duration === 'number' ? duration : (node.duration ?? null),
+              subtasks: normalizedChildren,
+            };
+          };
+          const toProjectsArray = (raw) => {
+            if (!raw) return [];
+            // If API returns { schedules: [...] }
+            const arr = Array.isArray(raw) ? raw : (Array.isArray(raw.schedules) ? raw.schedules : (Array.isArray(raw.schedule) ? raw.schedule : []));
+            if (Array.isArray(arr) && arr.length) {
+              // If looks like already a list of projects (with project property)
+              if (arr.some(x => x && (x.project || x.tasks || x.subtasks))) {
+                return arr.map(p => {
+                  const proj = ensureNode(p);
+                  // If no project title, lift from name
+                  if (proj) {
+                    if (!proj.project) proj.project = proj.name;
+                    // Ensure compatibility with existing render code
+                    proj.tasks = proj.subtasks || [];
+                  }
+                  return proj;
+                }).filter(Boolean);
+              }
+            }
+            // If API returns a single project object
+            if (raw && (raw.project || raw.tasks || raw.subtasks)) {
+              const proj = ensureNode(raw);
+              if (proj) {
+                if (!proj.project) proj.project = proj.name;
+                proj.tasks = proj.subtasks || [];
+              }
+              return proj ? [proj] : [];
+            }
+            // If API returns a flat list of activities, wrap into a project
+            if (Array.isArray(arr)) {
+              const children = arr.map(ensureNode).filter(Boolean);
+              if (children.length) {
+                const { minD, maxD } = computeSpanFromChildren(children);
+                return [{
+                  project: 'Project Schedule',
+                  name: 'Project Schedule',
+                  start_date: minD ? fmt(minD) : '',
+                  end_date: maxD ? fmt(maxD) : '',
+                  // Inclusive calculation: end - start + 1 day
+                  duration: (minD && maxD) ? Math.max(1, Math.round((maxD - minD)/(1000*60*60*24)) + 1) : null,
+                  subtasks: children,
+                  tasks: children,
+                }];
+              }
+            }
+            return [];
+          };
+
+          const schedules = json?.schedules ?? json?.schedule ?? json?.data ?? json;
+          const normalized = toProjectsArray(schedules);
+          if (normalized && normalized.length) {
+            setData(normalized);
+          } else {
+            console.warn('Schedules payload empty or unrecognized.');
+            setData([]);
+          }
+        }
+        catch(err){
+          console.error("Error fetching schedule:",err);
+          setData([]);
+        }
+      }
+      fetchSchedule();
+  },[]);
   // 🎨 CUSTOMIZABLE COLOR PALETTE - Match reference image
   // Customize these colors for each level of your schedule hierarchy
   const levelColors = {
@@ -175,735 +320,736 @@ const DetailedSchedule = () => {
       tooltip.style.transform = `translateX(-50%) translateY(6px) scale(.98)`;
     } catch (err) {}
   };
-  const data = [
-    {
-      project:
-        "UPLIFTING OF NEELA GUMBAD AREA ALONG WITH PROVISION OF UNDERGROUND PARKING FACILITY, LAHORE",
-      start_date: "10-Oct-25",
-      end_date: "10-Jun-26",
-      duration: 244,
-      tasks: [
-        {
-          name: "Letter of Acceptance",
-          duration: 0,
-          start_date: "10-Oct-25",
-          end_date: "10-Oct-25",
-          subtasks: [
-            {
-              name: "Letter Of Acceptance",
-              duration: 0,
-              start_date: "10-Oct-25",
-              end_date: "10-Oct-25",
-            },
-          ],
-        },
-        {
-          name: "Contractual Dates",
-          duration: 244,
-          start_date: "10-Oct-25",
-          end_date: "10-Jun-26",
-          subtasks: [
-            {
-              name: "Start of Project",
-              duration: 0,
-              start_date: "10-Oct-25",
-              end_date: " ",
-            },
-            {
-              name: "Completion of Project",
-              duration: 0,
-              start_date: "",
-              end_date: "10-Jun-26",
-            },
-          ],
-        },
-        {
-          name: "Engineer’s Deliverable",
-          duration: 50,
-          start_date: "10-Oct-25",
-          end_date: "28-Nov-25",
-          subtasks: [
-            {
-              name: "Structural Drawings IFCs",
-              duration: 0,
-              start_date: "",
-              end_date: "10-Oct-25",
-            },
-            {
-              name: "Road Works Drawings IFCs",
-              duration: 0,
-              start_date: "",
-              end_date: "08-Nov-25",
-            },
-            {
-              name: "Finishing Drawings IFCs",
-              duration: 0,
-              start_date: "",
-              end_date: "08-Nov-25",
-            },
-            {
-              name: "Architectural / MEP Drawings IFCs",
-              duration: 0,
-              start_date: "",
-              end_date: "10-Oct-25",
-            },
-            {
-              name: "Ancillary Works IFCs",
-              duration: 0,
-              start_date: "",
-              end_date: "28-Nov-25",
-            },
-          ],
-        },
-        {
-          name: "Mobilization",
-          duration: 244,
-          start_date: "10-Oct-25",
-          end_date: "10-Jun-26",
-          subtasks: [
-            {
-              name: "Mobilization of Machinery & Plants",
-              duration: 5,
-              start_date: "10-Oct-25",
-              end_date: "14-Oct-25",
-            },
-            {
-              name: "Mobilization of Staff & Site/Camp Offices",
-              duration: 5,
-              start_date: "10-Oct-25",
-              end_date: "14-Oct-25",
-            },
-            {
-              name: "Provision of Site/Camp Offices & Facilities (LOE)",
-              duration: 244,
-              start_date: "10-Oct-25",
-              end_date: "10-Jun-26",
-            },
-          ],
-        },
-        {
-          name: "Engineering",
-          duration: 71,
-          start_date: "10-Oct-25",
-          end_date: "19-Dec-25",
-          subtasks: [
-            {
-              name: "Shop Drawings",
-              duration: 71,
-              start_date: "10-Oct-25",
-              end_date: "19-Dec-25",
-              subtasks: [
-                {
-                  name: "Submission",
-                  duration: 57,
-                  start_date: "10-Oct-25",
-                  end_date: "05-Dec-25",
-                  subtasks: [
-                    {
-                      name: "Sub Structure",
-                      duration: 28,
-                      start_date: "10-Oct-25",
-                      end_date: "06-Nov-25",
-                      subtasks: [
-                        {
-                          name: "Shoring & Raft",
-                          duration: 7,
-                          start_date: "10-Oct-25",
-                          end_date: "16-Oct-25",
-                          subtasks: [
-                            {
-                              name: "Shop Drawings Submission",
-                              duration: 7,
-                              start_date: "10-Oct-25",
-                              end_date: "16-Oct-25",
-                            },
-                          ],
-                        },
-                        {
-                          name: "Basement-3",
-                          duration: 7,
-                          start_date: "17-Oct-25",
-                          end_date: "23-Oct-25",
-                          subtasks: [
-                            {
-                              name: "Shop Drawings Submission",
-                              duration: 7,
-                              start_date: "17-Oct-25",
-                              end_date: "23-Oct-25",
-                            },
-                          ],
-                        },
-                        {
-                          name: "Basement-2",
-                          duration: 7,
-                          start_date: "24-Oct-25",
-                          end_date: "30-Oct-25",
-                          subtasks: [
-                            {
-                              name: "Shop Drawings Submission",
-                              duration: 7,
-                              start_date: "24-Oct-25",
-                              end_date: "30-Oct-25",
-                            },
-                          ],
-                        },
-                        {
-                          name: "Basement-1",
-                          duration: 7,
-                          start_date: "31-Oct-25",
-                          end_date: "06-Nov-25",
-                          subtasks: [
-                            {
-                              name: "Shop Drawings Submission",
-                              duration: 7,
-                              start_date: "31-Oct-25",
-                              end_date: "06-Nov-25",
-                            },
-                          ],
-                        },
-                      ],
-                    },
-                    {
-                      name: "Super Structure",
-                      duration: 7,
-                      start_date: "10-Oct-25",
-                      end_date: "16-Oct-25",
-                      subtasks: [
-                        {
-                          name: "Ground Floor",
-                          duration: 7,
-                          start_date: "10-Oct-25",
-                          end_date: "16-Oct-25",
-                          subtasks: [
-                            {
-                              name: "Shop Drawings Submission",
-                              duration: 7,
-                              start_date: "10-Oct-25",
-                              end_date: "16-Oct-25",
-                            },
-                          ],
-                        },
-                      ],
-                    },
-                    {
-                      name: "Road Works",
-                      duration: 7,
-                      start_date: "17-Oct-25",
-                      end_date: "23-Oct-25",
-                      subtasks: [
-                        {
-                          name: "Shop Drawings Submission",
-                          duration: 7,
-                          start_date: "17-Oct-25",
-                          end_date: "23-Oct-25",
-                        },
-                      ],
-                    },
-                    {
-                      name: "Finishing Works",
-                      duration: 7,
-                      start_date: "24-Oct-25",
-                      end_date: "30-Oct-25",
-                      subtasks: [
-                        {
-                          name: "Shop Drawings Submission",
-                          duration: 7,
-                          start_date: "24-Oct-25",
-                          end_date: "30-Oct-25",
-                        },
-                      ],
-                    },
-                    {
-                      name: "Arcillary Works",
-                      duration: 7,
-                      start_date: "29-Nov-25",
-                      end_date: "05-Dec-25",
-                      subtasks: [
-                        {
-                          name: "Shop Drawings Submission",
-                          duration: 7,
-                          start_date: "29-Nov-25",
-                          end_date: "05-Dec-25",
-                        },
-                      ],
-                    },
-                  ],
-                },
-                {
-                  name: "Approval",
-                  duration: 71,
-                  start_date: "10-Oct-25",
-                  end_date: "19-Dec-25",
-                  subtasks: [
-                    {
-                      name: "Sub Structure",
-                      duration: 35,
-                      start_date: "10-Oct-25",
-                      end_date: "23-Oct-25",
-                      subtasks: [
-                        {
-                          name: "Shoring & Raft",
-                          duration: 14,
-                          start_date: "10-Oct-25",
-                          end_date: "23-Oct-25",
-                          subtasks: [
-                            {
-                              name: "Shop Drawings Submission",
-                              duration: 7,
-                              start_date: "10-Oct-25",
-                              end_date: "23-Oct-25",
-                            },
-                          ],
-                        },
-                        {
-                          name: "Basement-3",
-                          duration: 14,
-                          start_date: "17-Oct-25",
-                          end_date: "30-Oct-25",
-                          subtasks: [
-                            {
-                              name: "Shop Drawings Submission",
-                              duration: 7,
-                              start_date: "17-Oct-25",
-                              end_date: "30-Oct-25",
-                            },
-                          ],
-                        },
-                        {
-                          name: "Basement-2",
-                          duration: 14,
-                          start_date: "24-Oct-25",
-                          end_date: "06-Nov-25",
-                          subtasks: [
-                            {
-                              name: "Shop Drawings Submission",
-                              duration: 7,
-                              start_date: "24-Oct-25",
-                              end_date: "06-Nov-25",
-                            },
-                          ],
-                        },
-                        {
-                          name: "Basement-1",
-                          duration: 14,
-                          start_date: "31-Oct-25",
-                          end_date: "13-Nov-25",
-                          subtasks: [
-                            {
-                              name: "Shop Drawings Submission",
-                              duration: 14,
-                              start_date: "31-Oct-25",
-                              end_date: "13-Nov-25",
-                            },
-                          ],
-                        },
-                      ],
-                    },
-                    {
-                      name: "Super Structure",
-                      duration: 14,
-                      start_date: "17-Oct-25",
-                      end_date: "30-Oct-25",
-                      subtasks: [
-                        {
-                          name: "Ground Floor",
-                          duration: 14,
-                          start_date: "17-Oct-25",
-                          end_date: "30-Oct-25",
-                          subtasks: [
-                            {
-                              name: "Shop Drawings Submission",
-                              duration: 14,
-                              start_date: "17-Oct-25",
-                              end_date: "30-Oct-25",
-                            },
-                          ],
-                        },
-                      ],
-                    },
-                    {
-                      name: "Road Works",
-                      duration: 14,
-                      start_date: "17-Oct-25",
-                      end_date: "30-Oct-25",
-                      subtasks: [
-                        {
-                          name: "Shop Drawings Submission",
-                          duration: 14,
-                          start_date: "17-Oct-25",
-                          end_date: "30-Oct-25",
-                        },
-                      ],
-                    },
-                    {
-                      name: "Finishing Works",
-                      duration: 14,
-                      start_date: "24-Oct-25",
-                      end_date: "06-Nov-25",
-                      subtasks: [
-                        {
-                          name: "Shop Drawings Submission",
-                          duration: 14,
-                          start_date: "24-Oct-25",
-                          end_date: "06-Nov-25",
-                        },
-                      ],
-                    },
-                    {
-                      name: "Arcillary Works",
-                      duration: 14,
-                      start_date: "06-Dec-25",
-                      end_date: "19-Dec-25",
-                      subtasks: [
-                        {
-                          name: "Shop Drawings Submission",
-                          duration: 14,
-                          start_date: "06-Dec-25",
-                          end_date: "19-Dec-25",
-                        },
-                      ],
-                    },
-                  ],
-                },
-              ],
-            },
-          ],
-        },
-        {
-          name: "Procurement",
-          duration: 214,
-          start_date: "10-Oct-25",
-          end_date: "11-May-26",
-             subtasks: [
-                        {
-                          name: "Material Submittals",
-                          duration: 51,
-                          start_date: "10-Oct-25",
-                          end_date: "29-Nov-25",
-                             subtasks: [
-                        {
-                          name: "Aggregate(Crush)",
-                          duration: 7,
-                          start_date: "10-Oct-25",
-                          end_date: "16-Oct-25",
-                        },
-                        {
-                          name: "Bitumen",
-                          duration: 7,
-                          start_date: "16-Nov-25",
-                          end_date: "22-Nov-25",
-                        },
-                        {
-                          name: "Cement",
-                          duration: 7,
-                          start_date: "10-Oct-25",
-                          end_date: "16-Oct-25",
-                        },
-                        {
-                          name: "Counduits (MEP)",
-                          duration: 7,
-                          start_date: "10-Oct-25",
-                          end_date: "16-Oct-25",
-                        },
-                        {
-                          name: "Earthing Material",
-                          duration: 7,
-                          start_date: "10-Oct-25",
-                          end_date: "16-Oct-25",
-                        },
-                        {
-                          name: "Electrical Equipment & Accessories",
-                          duration: 7,
-                          start_date: "23-Nov-25",
-                          end_date: "29-Nov-25",
-                        },
-                        {
-                          name: "Fire Fighting Equipment & Accessories",
-                          duration: 7,
-                          start_date: "23-Nov-25",
-                          end_date: "29-Nov-25",
-                        },
-                        {
-                          name: "HVAC Equipment & Accessories",
-                          duration: 7,
-                          start_date: "23-Nov-25",
-                          end_date: "29-Nov-25",
-                        },
-                        {
-                          name: "Masonary",
-                          duration: 7,
-                          start_date: "10-Oct-25",
-                          end_date: "16-Oct-25",
-                        },
-                        {
-                          name: "Mechanical Equipment & Accessories",
-                          duration: 7,
-                          start_date: "23-Nov-25",
-                          end_date: "29-Nov-25",
-                        },
-                        {
-                          name: "Parking Management & CCTV System",
-                          duration: 7,
-                          start_date: "23-Nov-25",
-                          end_date: "29-Nov-25",
-                        },
-                        {
-                          name: "Passenger Elevator",
-                          duration: 7,
-                          start_date: "23-Nov-25",
-                          end_date: "29-Nov-25",
-                        },
-                        {
-                          name: "Pavers",
-                          duration: 7,
-                          start_date: "10-Oct-25",
-                          end_date: "16-Oct-25",
-                        },
-                        {
-                          name: "Reinforcement",
-                          duration: 7,
-                          start_date: "10-Oct-25",
-                          end_date: "16-Oct-25",
-                        },
-                        {
-                          name: "Sand",
-                          duration: 7,
-                          start_date: "10-Oct-25",
-                          end_date: "16-Oct-25",
-                        },
-                        {
-                          name: "Shuttering",
-                          duration: 7,
-                          start_date: "10-Oct-25",
-                          end_date: "16-Oct-25",
-                        },
-                        {
-                          name: "Sub-Base Material",
-                          duration: 7,
-                          start_date: "16-Nov-25",
-                          end_date: "22-Nov-25",
-                        },
-                        {
-                          name: "Termite Proofing",
-                          duration: 7,
-                          start_date: "10-Oct-25",
-                          end_date: "16-Oct-25",
-                        },
-                        {
-                          name: "Transformer",
-                          duration: 7,
-                          start_date: "23-Nov-25",
-                          end_date: "29-Nov-25",
-                        },
-                        {
-                          name: "Water Proofing",
-                          duration: 7,
-                          start_date: "10-Oct-25",
-                          end_date: "16-Oct-25",
-                        },
-                        {
-                          name: "Water Stooper",
-                          duration: 7,
-                          start_date: "10-Oct-25",
-                          end_date: "16-Oct-25",
-                        },
-                        {
-                          name: "Waterbound Matraial",
-                          duration: 7,
-                          start_date: "16-Nov-25",
-                          end_date: "22-Nov-25",
-                        },
-                      ]
-                        },
-                        {
-                          name:"Material Approvals",
-                          duration:58,
-                          start_date:"10-Oct-25",
-                          end_date:"06-Dec-25",
-                          subtasks:[
-                            {
-                              name: "Aggregate(Crush)",
-                              duration:14,
-                              start_date:"10-Oct-25",
-                              end_date:"23-Oct-25", 
-                            },
-                            {
-                              name: "Bitumen",
-                              duration:14,
-                              start_date:"16-Nov-25",
-                              end_date:"29-Nov-25", 
-                            },
-                            {
-                              name: "Cement",
-                              duration:14,
-                              start_date:"10-Oct-25",
-                              end_date:"23-Oct-25",
-                            },
-                            {
-                              name: "Counduits (MEP)",
-                              duration:14,
-                              start_date:"10-Oct-25",
-                              end_date:"23-Oct-25",
-                            },
-                            {
-                              name: "Earthing Material",
-                              duration:14,
-                              start_date:"10-Oct-25",
-                              end_date:"23-Oct-25",
-                            },
-                            {
-                              name: "Electrical Equipment & Accessories",
-                              duration:14,
-                              start_date:"23-Nov-25",
-                              end_date:"06-Dec-25",
-                            },
+  // const data = [
+  //   {
+  //     project:
+  //       "UPLIFTING OF NEELA GUMBAD AREA ALONG WITH PROVISION OF UNDERGROUND PARKING FACILITY, LAHORE",
+  //     start_date: "10-Oct-25",
+  //     end_date: "10-Jun-26",
+  //     duration: 244,
+  //     tasks: [
+  //       {
+  //         name: "Letter of Acceptance",
+  //         duration: 0,
+  //         start_date: "10-Oct-25",
+  //         end_date: "10-Oct-25",
+  //         subtasks: [
+  //           {
+  //             name: "Letter Of Acceptance",
+  //             duration: 0,
+  //             start_date: "10-Oct-25",
+  //             end_date: "10-Oct-25",
+  //           },
+  //         ],
+  //       },
+  //       {
+  //         name: "Contractual Dates",
+  //         duration: 244,
+  //         start_date: "10-Oct-25",
+  //         end_date: "10-Jun-26",
+  //         subtasks: [
+  //           {
+  //             name: "Start of Project",
+  //             duration: 0,
+  //             start_date: "10-Oct-25",
+  //             end_date: " ",
+  //           },
+  //           {
+  //             name: "Completion of Project",
+  //             duration: 0,
+  //             start_date: "",
+  //             end_date: "10-Jun-26",
+  //           },
+  //         ],
+  //       },
+  //       {
+  //         name: "Engineer’s Deliverable",
+  //         duration: 50,
+  //         start_date: "10-Oct-25",
+  //         end_date: "28-Nov-25",
+  //         subtasks: [
+  //           {
+  //             name: "Structural Drawings IFCs",
+  //             duration: 0,
+  //             start_date: "",
+  //             end_date: "10-Oct-25",
+  //           },
+  //           {
+  //             name: "Road Works Drawings IFCs",
+  //             duration: 0,
+  //             start_date: "",
+  //             end_date: "08-Nov-25",
+  //           },
+  //           {
+  //             name: "Finishing Drawings IFCs",
+  //             duration: 0,
+  //             start_date: "",
+  //             end_date: "08-Nov-25",
+  //           },
+  //           {
+  //             name: "Architectural / MEP Drawings IFCs",
+  //             duration: 0,
+  //             start_date: "",
+  //             end_date: "10-Oct-25",
+  //           },
+  //           {
+  //             name: "Ancillary Works IFCs",
+  //             duration: 0,
+  //             start_date: "",
+  //             end_date: "28-Nov-25",
+  //           },
+  //         ],
+  //       },
+  //       {
+  //         name: "Mobilization",
+  //         duration: 244,
+  //         start_date: "10-Oct-25",
+  //         end_date: "10-Jun-26",
+  //         subtasks: [
+  //           {
+  //             name: "Mobilization of Machinery & Plants",
+  //             duration: 5,
+  //             start_date: "10-Oct-25",
+  //             end_date: "14-Oct-25",
+  //           },
+  //           {
+  //             name: "Mobilization of Staff & Site/Camp Offices",
+  //             duration: 5,
+  //             start_date: "10-Oct-25",
+  //             end_date: "14-Oct-25",
+  //           },
+  //           {
+  //             name: "Provision of Site/Camp Offices & Facilities (LOE)",
+  //             duration: 244,
+  //             start_date: "10-Oct-25",
+  //             end_date: "10-Jun-26",
+  //           },
+  //         ],
+  //       },
+  //       {
+  //         name: "Engineering",
+  //         duration: 71,
+  //         start_date: "10-Oct-25",
+  //         end_date: "19-Dec-25",
+  //         subtasks: [
+  //           {
+  //             name: "Shop Drawings",
+  //             duration: 71,
+  //             start_date: "10-Oct-25",
+  //             end_date: "19-Dec-25",
+  //             subtasks: [
+  //               {
+  //                 name: "Submission",
+  //                 duration: 57,
+  //                 start_date: "10-Oct-25",
+  //                 end_date: "05-Dec-25",
+  //                 subtasks: [
+  //                   {
+  //                     name: "Sub Structure",
+  //                     duration: 28,
+  //                     start_date: "10-Oct-25",
+  //                     end_date: "06-Nov-25",
+  //                     subtasks: [
+  //                       {
+  //                         name: "Shoring & Raft",
+  //                         duration: 7,
+  //                         start_date: "10-Oct-25",
+  //                         end_date: "16-Oct-25",
+  //                         subtasks: [
+  //                           {
+  //                             name: "Shop Drawings Submission",
+  //                             duration: 7,
+  //                             start_date: "10-Oct-25",
+  //                             end_date: "16-Oct-25",
+  //                           },
+  //                         ],
+  //                       },
+  //                       {
+  //                         name: "Basement-3",
+  //                         duration: 7,
+  //                         start_date: "17-Oct-25",
+  //                         end_date: "23-Oct-25",
+  //                         subtasks: [
+  //                           {
+  //                             name: "Shop Drawings Submission",
+  //                             duration: 7,
+  //                             start_date: "17-Oct-25",
+  //                             end_date: "23-Oct-25",
+  //                           },
+  //                         ],
+  //                       },
+  //                       {
+  //                         name: "Basement-2",
+  //                         duration: 7,
+  //                         start_date: "24-Oct-25",
+  //                         end_date: "30-Oct-25",
+  //                         subtasks: [
+  //                           {
+  //                             name: "Shop Drawings Submission",
+  //                             duration: 7,
+  //                             start_date: "24-Oct-25",
+  //                             end_date: "30-Oct-25",
+  //                           },
+  //                         ],
+  //                       },
+  //                       {
+  //                         name: "Basement-1",
+  //                         duration: 7,
+  //                         start_date: "31-Oct-25",
+  //                         end_date: "06-Nov-25",
+  //                         subtasks: [
+  //                           {
+  //                             name: "Shop Drawings Submission",
+  //                             duration: 7,
+  //                             start_date: "31-Oct-25",
+  //                             end_date: "06-Nov-25",
+  //                           },
+  //                         ],
+  //                       },
+  //                     ],
+  //                   },
+  //                   {
+  //                     name: "Super Structure",
+  //                     duration: 7,
+  //                     start_date: "10-Oct-25",
+  //                     end_date: "16-Oct-25",
+  //                     subtasks: [
+  //                       {
+  //                         name: "Ground Floor",
+  //                         duration: 7,
+  //                         start_date: "10-Oct-25",
+  //                         end_date: "16-Oct-25",
+  //                         subtasks: [
+  //                           {
+  //                             name: "Shop Drawings Submission",
+  //                             duration: 7,
+  //                             start_date: "10-Oct-25",
+  //                             end_date: "16-Oct-25",
+  //                           },
+  //                         ],
+  //                       },
+  //                     ],
+  //                   },
+  //                   {
+  //                     name: "Road Works",
+  //                     duration: 7,
+  //                     start_date: "17-Oct-25",
+  //                     end_date: "23-Oct-25",
+  //                     subtasks: [
+  //                       {
+  //                         name: "Shop Drawings Submission",
+  //                         duration: 7,
+  //                         start_date: "17-Oct-25",
+  //                         end_date: "23-Oct-25",
+  //                       },
+  //                     ],
+  //                   },
+  //                   {
+  //                     name: "Finishing Works",
+  //                     duration: 7,
+  //                     start_date: "24-Oct-25",
+  //                     end_date: "30-Oct-25",
+  //                     subtasks: [
+  //                       {
+  //                         name: "Shop Drawings Submission",
+  //                         duration: 7,
+  //                         start_date: "24-Oct-25",
+  //                         end_date: "30-Oct-25",
+  //                       },
+  //                     ],
+  //                   },
+  //                   {
+  //                     name: "Arcillary Works",
+  //                     duration: 7,
+  //                     start_date: "29-Nov-25",
+  //                     end_date: "05-Dec-25",
+  //                     subtasks: [
+  //                       {
+  //                         name: "Shop Drawings Submission",
+  //                         duration: 7,
+  //                         start_date: "29-Nov-25",
+  //                         end_date: "05-Dec-25",
+  //                       },
+  //                     ],
+  //                   },
+  //                 ],
+  //               },
+  //               {
+  //                 name: "Approval",
+  //                 duration: 71,
+  //                 start_date: "10-Oct-25",
+  //                 end_date: "19-Dec-25",
+  //                 subtasks: [
+  //                   {
+  //                     name: "Sub Structure",
+  //                     duration: 35,
+  //                     start_date: "10-Oct-25",
+  //                     end_date: "23-Oct-25",
+  //                     subtasks: [
+  //                       {
+  //                         name: "Shoring & Raft",
+  //                         duration: 14,
+  //                         start_date: "10-Oct-25",
+  //                         end_date: "23-Oct-25",
+  //                         subtasks: [
+  //                           {
+  //                             name: "Shop Drawings Submission",
+  //                             duration: 7,
+  //                             start_date: "10-Oct-25",
+  //                             end_date: "23-Oct-25",
+  //                           },
+  //                         ],
+  //                       },
+  //                       {
+  //                         name: "Basement-3",
+  //                         duration: 14,
+  //                         start_date: "17-Oct-25",
+  //                         end_date: "30-Oct-25",
+  //                         subtasks: [
+  //                           {
+  //                             name: "Shop Drawings Submission",
+  //                             duration: 7,
+  //                             start_date: "17-Oct-25",
+  //                             end_date: "30-Oct-25",
+  //                           },
+  //                         ],
+  //                       },
+  //                       {
+  //                         name: "Basement-2",
+  //                         duration: 14,
+  //                         start_date: "24-Oct-25",
+  //                         end_date: "06-Nov-25",
+  //                         subtasks: [
+  //                           {
+  //                             name: "Shop Drawings Submission",
+  //                             duration: 7,
+  //                             start_date: "24-Oct-25",
+  //                             end_date: "06-Nov-25",
+  //                           },
+  //                         ],
+  //                       },
+  //                       {
+  //                         name: "Basement-1",
+  //                         duration: 14,
+  //                         start_date: "31-Oct-25",
+  //                         end_date: "13-Nov-25",
+  //                         subtasks: [
+  //                           {
+  //                             name: "Shop Drawings Submission",
+  //                             duration: 14,
+  //                             start_date: "31-Oct-25",
+  //                             end_date: "13-Nov-25",
+  //                           },
+  //                         ],
+  //                       },
+  //                     ],
+  //                   },
+  //                   {
+  //                     name: "Super Structure",
+  //                     duration: 14,
+  //                     start_date: "17-Oct-25",
+  //                     end_date: "30-Oct-25",
+  //                     subtasks: [
+  //                       {
+  //                         name: "Ground Floor",
+  //                         duration: 14,
+  //                         start_date: "17-Oct-25",
+  //                         end_date: "30-Oct-25",
+  //                         subtasks: [
+  //                           {
+  //                             name: "Shop Drawings Submission",
+  //                             duration: 14,
+  //                             start_date: "17-Oct-25",
+  //                             end_date: "30-Oct-25",
+  //                           },
+  //                         ],
+  //                       },
+  //                     ],
+  //                   },
+  //                   {
+  //                     name: "Road Works",
+  //                     duration: 14,
+  //                     start_date: "17-Oct-25",
+  //                     end_date: "30-Oct-25",
+  //                     subtasks: [
+  //                       {
+  //                         name: "Shop Drawings Submission",
+  //                         duration: 14,
+  //                         start_date: "17-Oct-25",
+  //                         end_date: "30-Oct-25",
+  //                       },
+  //                     ],
+  //                   },
+  //                   {
+  //                     name: "Finishing Works",
+  //                     duration: 14,
+  //                     start_date: "24-Oct-25",
+  //                     end_date: "06-Nov-25",
+  //                     subtasks: [
+  //                       {
+  //                         name: "Shop Drawings Submission",
+  //                         duration: 14,
+  //                         start_date: "24-Oct-25",
+  //                         end_date: "06-Nov-25",
+  //                       },
+  //                     ],
+  //                   },
+  //                   {
+  //                     name: "Arcillary Works",
+  //                     duration: 14,
+  //                     start_date: "06-Dec-25",
+  //                     end_date: "19-Dec-25",
+  //                     subtasks: [
+  //                       {
+  //                         name: "Shop Drawings Submission",
+  //                         duration: 14,
+  //                         start_date: "06-Dec-25",
+  //                         end_date: "19-Dec-25",
+  //                       },
+  //                     ],
+  //                   },
+  //                 ],
+  //               },
+  //             ],
+  //           },
+  //         ],
+  //       },
+  //       {
+  //         name: "Procurement",
+  //         duration: 214,
+  //         start_date: "10-Oct-25",
+  //         end_date: "11-May-26",
+  //            subtasks: [
+  //                       {
+  //                         name: "Material Submittals",
+  //                         duration: 51,
+  //                         start_date: "10-Oct-25",
+  //                         end_date: "29-Nov-25",
+  //                            subtasks: [
+  //                       {
+  //                         name: "Aggregate(Crush)",
+  //                         duration: 7,
+  //                         start_date: "10-Oct-25",
+  //                         end_date: "16-Oct-25",
+  //                       },
+  //                       {
+  //                         name: "Bitumen",
+  //                         duration: 7,
+  //                         start_date: "16-Nov-25",
+  //                         end_date: "22-Nov-25",
+  //                       },
+  //                       {
+  //                         name: "Cement",
+  //                         duration: 7,
+  //                         start_date: "10-Oct-25",
+  //                         end_date: "16-Oct-25",
+  //                       },
+  //                       {
+  //                         name: "Counduits (MEP)",
+  //                         duration: 7,
+  //                         start_date: "10-Oct-25",
+  //                         end_date: "16-Oct-25",
+  //                       },
+  //                       {
+  //                         name: "Earthing Material",
+  //                         duration: 7,
+  //                         start_date: "10-Oct-25",
+  //                         end_date: "16-Oct-25",
+  //                       },
+  //                       {
+  //                         name: "Electrical Equipment & Accessories",
+  //                         duration: 7,
+  //                         start_date: "23-Nov-25",
+  //                         end_date: "29-Nov-25",
+  //                       },
+  //                       {
+  //                         name: "Fire Fighting Equipment & Accessories",
+  //                         duration: 7,
+  //                         start_date: "23-Nov-25",
+  //                         end_date: "29-Nov-25",
+  //                       },
+  //                       {
+  //                         name: "HVAC Equipment & Accessories",
+  //                         duration: 7,
+  //                         start_date: "23-Nov-25",
+  //                         end_date: "29-Nov-25",
+  //                       },
+  //                       {
+  //                         name: "Masonary",
+  //                         duration: 7,
+  //                         start_date: "10-Oct-25",
+  //                         end_date: "16-Oct-25",
+  //                       },
+  //                       {
+  //                         name: "Mechanical Equipment & Accessories",
+  //                         duration: 7,
+  //                         start_date: "23-Nov-25",
+  //                         end_date: "29-Nov-25",
+  //                       },
+  //                       {
+  //                         name: "Parking Management & CCTV System",
+  //                         duration: 7,
+  //                         start_date: "23-Nov-25",
+  //                         end_date: "29-Nov-25",
+  //                       },
+  //                       {
+  //                         name: "Passenger Elevator",
+  //                         duration: 7,
+  //                         start_date: "23-Nov-25",
+  //                         end_date: "29-Nov-25",
+  //                       },
+  //                       {
+  //                         name: "Pavers",
+  //                         duration: 7,
+  //                         start_date: "10-Oct-25",
+  //                         end_date: "16-Oct-25",
+  //                       },
+  //                       {
+  //                         name: "Reinforcement",
+  //                         duration: 7,
+  //                         start_date: "10-Oct-25",
+  //                         end_date: "16-Oct-25",
+  //                       },
+  //                       {
+  //                         name: "Sand",
+  //                         duration: 7,
+  //                         start_date: "10-Oct-25",
+  //                         end_date: "16-Oct-25",
+  //                       },
+  //                       {
+  //                         name: "Shuttering",
+  //                         duration: 7,
+  //                         start_date: "10-Oct-25",
+  //                         end_date: "16-Oct-25",
+  //                       },
+  //                       {
+  //                         name: "Sub-Base Material",
+  //                         duration: 7,
+  //                         start_date: "16-Nov-25",
+  //                         end_date: "22-Nov-25",
+  //                       },
+  //                       {
+  //                         name: "Termite Proofing",
+  //                         duration: 7,
+  //                         start_date: "10-Oct-25",
+  //                         end_date: "16-Oct-25",
+  //                       },
+  //                       {
+  //                         name: "Transformer",
+  //                         duration: 7,
+  //                         start_date: "23-Nov-25",
+  //                         end_date: "29-Nov-25",
+  //                       },
+  //                       {
+  //                         name: "Water Proofing",
+  //                         duration: 7,
+  //                         start_date: "10-Oct-25",
+  //                         end_date: "16-Oct-25",
+  //                       },
+  //                       {
+  //                         name: "Water Stooper",
+  //                         duration: 7,
+  //                         start_date: "10-Oct-25",
+  //                         end_date: "16-Oct-25",
+  //                       },
+  //                       {
+  //                         name: "Waterbound Matraial",
+  //                         duration: 7,
+  //                         start_date: "16-Nov-25",
+  //                         end_date: "22-Nov-25",
+  //                       },
+  //                     ]
+  //                       },
+  //                       {
+  //                         name:"Material Approvals",
+  //                         duration:58,
+  //                         start_date:"10-Oct-25",
+  //                         end_date:"06-Dec-25",
+  //                         subtasks:[
+  //                           {
+  //                             name: "Aggregate(Crush)",
+  //                             duration:14,
+  //                             start_date:"10-Oct-25",
+  //                             end_date:"23-Oct-25", 
+  //                           },
+  //                           {
+  //                             name: "Bitumen",
+  //                             duration:14,
+  //                             start_date:"16-Nov-25",
+  //                             end_date:"29-Nov-25", 
+  //                           },
+  //                           {
+  //                             name: "Cement",
+  //                             duration:14,
+  //                             start_date:"10-Oct-25",
+  //                             end_date:"23-Oct-25",
+  //                           },
+  //                           {
+  //                             name: "Counduits (MEP)",
+  //                             duration:14,
+  //                             start_date:"10-Oct-25",
+  //                             end_date:"23-Oct-25",
+  //                           },
+  //                           {
+  //                             name: "Earthing Material",
+  //                             duration:14,
+  //                             start_date:"10-Oct-25",
+  //                             end_date:"23-Oct-25",
+  //                           },
+  //                           {
+  //                             name: "Electrical Equipment & Accessories",
+  //                             duration:14,
+  //                             start_date:"23-Nov-25",
+  //                             end_date:"06-Dec-25",
+  //                           },
  
-                            {
-                              name: "Water Stooper",
-                              duration:14,
-                              start_date:"10-Oct-25",
-                              end_date:"23-Oct-25",
-                            },
-                            {
-                              name: "Waterbound Matraial",
-                              duration:14,
-                              start_date:"16-Nov-25",
-                              end_date:"29-Nov-25",
-                            }
-                          ]
-                        },
-                        {
-                          name:"Material (Issuance of PO, Manufacturing & Delivery)",
-                          duration:200,
-                          start_date:"24-Oct-25",
-                          end_date:"11-May-26",
-                          subtasks:[
-                            {
-                              name:"Short Lead Items",
-                              duration:200,
-                              start_date:"24-Oct-25",
-                              end_date:"11-May-26",
-                              subtasks:[
-                                {
-                                  name: "Aggregate(Crush)",
-                                  duration:169,
-                                  start_date:"24-Oct-25",
-                                  end_date:"10-Apr-26",
-                                },
-                                {
-                                  name: "Bitumen",
-                                  duration:40,
-                                  start_date:"23-Feb-26",
-                                  end_date:"03-Apr-26",
-                                },
-                                {
-                                  name: "Cement",
-                                  duration:169,
-                                  start_date:"24-Oct-25",
-                                  end_date:"10-Apr-26",
-                                },
-                                {
-                                  name: "Counduits (MEP)",
-                                  duration:180,
-                                  start_date:"13-Nov-25",
-                                  end_date:"11-May-26",
-                                },
-                                {
-                                  name: "Electrical Earthing Material",
-                                  duration:14,
-                                  start_date:"24-Oct-25",
-                                  end_date:"06-Nov-25",
-                                },
-                                {
-                                  name: "Electrical Equipment & Accessories",
-                                  duration:30,
-                                  start_data:"15-Feb-25",
-                                  end_date:"16-Mar-26",
-                                },
-                                {
-                                  name:"HVAC Equipment & Accessories",
-                                  duration:30,
-                                  start_date:"15-Feb-26",
-                                  end_date:"16-Mar-26",
-                                },
-                                {
-                                  name:"Masonary",
-                                  duration:169,
-                                  start_date:"24-Oct-25",
-                                  end_date:"10-Apr-26",
-                                },
-                                {
-                                  name:"Mechanical Equipment & Accessories",
-                                  duration:30,
-                                  start_date:"15-Feb-26",
-                                  end_date:"16-Mar-26",
-                                },
-                                {
-                                  name:"Pavers",
-                                  duration:37,
-                                  start_date:"02-Jan-26",
-                                  end_date:"07-Feb-26",
-                                },
-                                {
-                                  name:"Reinforcement",
-                                  duration:169,
-                                  start_date:"24-Oct-25",
-                                  end_date:"10-Apr-26",
-                                },
-                                {
-                                  name:"Sand",
-                                  duration:169,
-                                  start_date:"24-Oct-25",
-                                  end_date:"10-Apr-26",
-                                },
-                                {
-                                  name:"Shuttering",
-                                  duration:60,
-                                  start_date:"24-Oct-25",
-                                  end_date:"22-Dec-25",
-                                },
-                                {
-                                  name:"Sub-Base Material",
-                                  duration:40,
-                                  start_date:"18-Feb-26",
-                                  end_date:"29-Mar-26",
-                                },
-                                {
-                                  name:"Termite Proofing",
-                                  duration:14,
-                                  start_date:"24-Oct-25",
-                                  end_date:"06-Nov-25",
-                                },
-                                {
-                                  name:"Water Proofing",
-                                  duration:150,
-                                  start_date:"24-Oct-25",
-                                  end_date:"22-Mar-26",
-                                },
-                                {
-                                  name:"Water Stooper",
-                                  duration:25,
-                                  start_date:"24-Oct-25",
-                                  end_date:"17-Nov-25",
-                                },
-                                {
-                                  name:"Waterbound Matraial",
-                                  duration:40,
-                                  start_date:"18-Feb-26",
-                                  end_date:"29-Mar-26",
-                                }
-                              ]
-                            }
-                          ]
-                        }
-                      ]
-        },
-        {
+  //                           {
+  //                             name: "Water Stooper",
+  //                             duration:14,
+  //                             start_date:"10-Oct-25",
+  //                             end_date:"23-Oct-25",
+  //                           },
+  //                           {
+  //                             name: "Waterbound Matraial",
+  //                             duration:14,
+  //                             start_date:"16-Nov-25",
+  //                             end_date:"29-Nov-25",
+  //                           }
+  //                         ]
+  //                       },
+  //                       {
+  //                         name:"Material (Issuance of PO, Manufacturing & Delivery)",
+  //                         duration:200,
+  //                         start_date:"24-Oct-25",
+  //                         end_date:"11-May-26",
+  //                         subtasks:[
+  //                           {
+  //                             name:"Short Lead Items",
+  //                             duration:200,
+  //                             start_date:"24-Oct-25",
+  //                             end_date:"11-May-26",
+  //                             subtasks:[
+  //                               {
+  //                                 name: "Aggregate(Crush)",
+  //                                 duration:169,
+  //                                 start_date:"24-Oct-25",
+  //                                 end_date:"10-Apr-26",
+  //                               },
+  //                               {
+  //                                 name: "Bitumen",
+  //                                 duration:40,
+  //                                 start_date:"23-Feb-26",
+  //                                 end_date:"03-Apr-26",
+  //                               },
+  //                               {
+  //                                 name: "Cement",
+  //                                 duration:169,
+  //                                 start_date:"24-Oct-25",
+  //                                 end_date:"10-Apr-26",
+  //                               },
+  //                               {
+  //                                 name: "Counduits (MEP)",
+  //                                 duration:180,
+  //                                 start_date:"13-Nov-25",
+  //                                 end_date:"11-May-26",
+  //                               },
+  //                               {
+  //                                 name: "Electrical Earthing Material",
+  //                                 duration:14,
+  //                                 start_date:"24-Oct-25",
+  //                                 end_date:"06-Nov-25",
+  //                               },
+  //                               {
+  //                                 name: "Electrical Equipment & Accessories",
+  //                                 duration:30,
+  //                                 start_data:"15-Feb-25",
+  //                                 end_date:"16-Mar-26",
+  //                               },
+  //                               {
+  //                                 name:"HVAC Equipment & Accessories",
+  //                                 duration:30,
+  //                                 start_date:"15-Feb-26",
+  //                                 end_date:"16-Mar-26",
+  //                               },
+  //                               {
+  //                                 name:"Masonary",
+  //                                 duration:169,
+  //                                 start_date:"24-Oct-25",
+  //                                 end_date:"10-Apr-26",
+  //                               },
+  //                               {
+  //                                 name:"Mechanical Equipment & Accessories",
+  //                                 duration:30,
+  //                                 start_date:"15-Feb-26",
+  //                                 end_date:"16-Mar-26",
+  //                               },
+  //                               {
+  //                                 name:"Pavers",
+  //                                 duration:37,
+  //                                 start_date:"02-Jan-26",
+  //                                 end_date:"07-Feb-26",
+  //                               },
+  //                               {
+  //                                 name:"Reinforcement",
+  //                                 duration:169,
+  //                                 start_date:"24-Oct-25",
+  //                                 end_date:"10-Apr-26",
+  //                               },
+  //                               {
+  //                                 name:"Sand",
+  //                                 duration:169,
+  //                                 start_date:"24-Oct-25",
+  //                                 end_date:"10-Apr-26",
+  //                               },
+  //                               {
+  //                                 name:"Shuttering",
+  //                                 duration:60,
+  //                                 start_date:"24-Oct-25",
+  //                                 end_date:"22-Dec-25",
+  //                               },
+  //                               {
+  //                                 name:"Sub-Base Material",
+  //                                 duration:40,
+  //                                 start_date:"18-Feb-26",
+  //                                 end_date:"29-Mar-26",
+  //                               },
+  //                               {
+  //                                 name:"Termite Proofing",
+  //                                 duration:14,
+  //                                 start_date:"24-Oct-25",
+  //                                 end_date:"06-Nov-25",
+  //                               },
+  //                               {
+  //                                 name:"Water Proofing",
+  //                                 duration:150,
+  //                                 start_date:"24-Oct-25",
+  //                                 end_date:"22-Mar-26",
+  //                               },
+  //                               {
+  //                                 name:"Water Stooper",
+  //                                 duration:25,
+  //                                 start_date:"24-Oct-25",
+  //                                 end_date:"17-Nov-25",
+  //                               },
+  //                               {
+  //                                 name:"Waterbound Matraial",
+  //                                 duration:40,
+  //                                 start_date:"18-Feb-26",
+  //                                 end_date:"29-Mar-26",
+  //                               }
+  //                             ]
+  //                           }
+  //                         ]
+  //                       }
+  //                     ]
+  //       },
+  //       {
 
-        }
-      ],
-    },
-  ];
+  //       }
+  //     ],
+  //   },
+  // ];
+
   const togglePhase = (phaseIndex) => {
     const newSet = new Set(expandedPhases);
     newSet.has(phaseIndex) ? newSet.delete(phaseIndex) : newSet.add(phaseIndex);
@@ -923,10 +1069,21 @@ const DetailedSchedule = () => {
     setExpandedSubpackages(newSet);
   };
   const renderTimeline = (item, level = 0, keyStr = "", isLeaf = false) => {
-    // Precise day-based positioning: compute left/width as percent of full project span
+    // Month-grid-based positioning: align bars with the month columns
     const parseDate = (s) => {
-      if (!s || typeof s !== "string") return null;
-      const parts = s.trim().split(/[-/\s]+/);
+      if (!s) return null;
+      if (s instanceof Date) return isNaN(s) ? null : s;
+      if (typeof s !== "string") return null;
+      const trimmed = s.trim();
+      // ISO-like: YYYY-MM-DD or YYYY-MM-DDTHH:mm:ssZ
+      const iso = trimmed.match(/^(\d{4})-(\d{2})-(\d{2})/);
+      if (iso) {
+        const yy = parseInt(iso[1], 10);
+        const mm = parseInt(iso[2], 10) - 1;
+        const dd = parseInt(iso[3], 10);
+        return new Date(yy, mm, dd);
+      }
+      const parts = trimmed.split(/[-/\s]+/);
       if (parts.length < 3) return null;
       const day = parseInt(parts[0], 10) || 1;
       const monStr = parts[1];
@@ -944,15 +1101,50 @@ const DetailedSchedule = () => {
 
     const startDate = parseDate(item.start_date);
     const endDate = parseDate(item.end_date);
-    if (startDate && endDate && projectStart && projectEnd && projectEnd > projectStart) {
-      const msPerDay = 1000 * 60 * 60 * 24;
-      const totalDays = Math.max(1, Math.ceil((projectEnd - projectStart) / msPerDay));
-      const itemStartOffset = Math.max(0, Math.floor((startDate - projectStart) / msPerDay));
-      const itemDurationDays = Math.max(1, Math.ceil((endDate - startDate) / msPerDay));
-      const leftPct = (itemStartOffset / totalDays) * 100;
-      const widthPct = (itemDurationDays / totalDays) * 100;
+    
+    if (startDate && endDate && projectStart && projectEnd && projectEnd >= projectStart) {
+      // Calculate which month each date falls into
+      const getMonthsSince = (fromDate, toDate) => {
+        const yearDiff = toDate.getFullYear() - fromDate.getFullYear();
+        const monthDiff = toDate.getMonth() - fromDate.getMonth();
+        return yearDiff * 12 + monthDiff;
+      };
+      
+      const getDaysIntoMonth = (date) => {
+        return date.getDate() - 1; // 0-indexed day within month
+      };
+      
+      const getDaysInMonth = (date) => {
+        return new Date(date.getFullYear(), date.getMonth() + 1, 0).getDate();
+      };
+      
+      // Calculate start position
+      const startMonthOffset = getMonthsSince(projectStart, startDate);
+      const startDayRatio = getDaysIntoMonth(startDate) / getDaysInMonth(startDate);
+      const leftMonths = startMonthOffset + startDayRatio;
+      
+      // Calculate end position
+      const endMonthOffset = getMonthsSince(projectStart, endDate);
+      const endDayRatio = (getDaysIntoMonth(endDate) + 1) / getDaysInMonth(endDate); // +1 to include end day
+      const rightMonths = endMonthOffset + endDayRatio;
+      
+      // Convert to percentages based on total month range
+      const totalMonthsInProject = getMonthsSince(projectStart, projectEnd) + 1;
+      const leftPct = (leftMonths / totalMonthsInProject) * 100;
+      const widthPct = ((rightMonths - leftMonths) / totalMonthsInProject) * 100;
       // Bar color: use the 'bar' color from levelColors (e.g., #1fdd81 for green, #ffffff for others)
       const barColor = levelColors[level]?.bar || levelColors[1].bar;
+      
+      // Format dates for display
+      const formatDate = (d) => {
+        if (!d || !(d instanceof Date) || isNaN(d)) return '-';
+        const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+        const dd = String(d.getDate()).padStart(2, '0');
+        const mm = months[d.getMonth()];
+        const yy = String(d.getFullYear()).slice(-2);
+        return `${dd}-${mm}-${yy}`;
+      };
+      
       // tooltip with inline icon and meta
       return (
         <div
@@ -971,7 +1163,7 @@ const DetailedSchedule = () => {
             </div>
             <div className="ruda-tooltip-body">
               <div className="ruda-tooltip-title">{item.name}</div>
-              <div className="ruda-tooltip-meta">{item.start_date || "-"} → {item.end_date || "-"} · {item.duration ?? "-"} days</div>
+              <div className="ruda-tooltip-meta">{formatDate(startDate)} → {formatDate(endDate)} · {item.duration ?? "-"} days</div>
             </div>
           </div>
           {/* Full white background bar from project start to end */}
@@ -1106,8 +1298,8 @@ const DetailedSchedule = () => {
             </td>
             <td className="ruda-cell right">-</td>
             <td className="ruda-cell right">{st.duration}</td>
-            <td className="ruda-cell right">{st.start_date}</td>
-            <td className="ruda-cell right">{st.end_date}</td>
+            <td className="ruda-cell right">{formatDateDisplay(st.start_date)}</td>
+            <td className="ruda-cell right">{formatDateDisplay(st.end_date)}</td>
             <td colSpan={totalMonths} className="ruda-timeline-cell" style={{ backgroundColor: (st.subtasks && st.subtasks.length > 0) ? backgroundColor : '#ffffff' }}>
               {renderTimeline ? renderTimeline(st, level, key, !(st.subtasks && st.subtasks.length > 0)) : null}
             </td>
@@ -1121,8 +1313,19 @@ const DetailedSchedule = () => {
   };
   // -- compute months range from project start/end (from JSON data) --
   const parseDateStr = (s) => {
-    if (!s || typeof s !== "string") return null;
-    const parts = s.trim().split(/[-/\s]+/);
+    if (!s) return null;
+    if (s instanceof Date) return isNaN(s) ? null : s;
+    if (typeof s !== "string") return null;
+    const trimmed = s.trim();
+    // ISO-like: YYYY-MM-DD or YYYY-MM-DDTHH:mm:ssZ
+    const iso = trimmed.match(/^(\d{4})-(\d{2})-(\d{2})/);
+    if (iso) {
+      const yy = parseInt(iso[1], 10);
+      const mm = parseInt(iso[2], 10) - 1;
+      const dd = parseInt(iso[3], 10);
+      return new Date(yy, mm, dd);
+    }
+    const parts = trimmed.split(/[-\/\s]+/);
     if (parts.length < 3) return null;
     const day = parseInt(parts[0], 10) || 1;
     const monStr = parts[1];
@@ -1163,6 +1366,33 @@ const DetailedSchedule = () => {
     return months;
   };
 
+  // Display helper: show only date part (DD-MMM-YY) for any parseable input; otherwise strip time from common strings
+  const formatDateDisplay = (val) => {
+    if (!val) return '';
+    let d = parseDateStr(val);
+    if (!(d instanceof Date) || isNaN(d)) {
+      if (typeof val === 'string') {
+        // Try to strip time from ISO or space-separated date-time
+        const iso = val.match(/^(\d{4}-\d{2}-\d{2})/);
+        if (iso) {
+          const [y, m, day] = iso[1].split('-').map(Number);
+          d = new Date(y, m - 1, day);
+        } else {
+          const head = val.split(/[T\s]/)[0];
+          if (/^\d{2}-[A-Za-z]{3}-\d{2}$/.test(head)) return head; // already formatted
+          return head; // best effort: first token before time
+        }
+      } else {
+        return '';
+      }
+    }
+    const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+    const dd = String(d.getDate()).padStart(2, '0');
+    const mm = months[d.getMonth()];
+    const yy = String(d.getFullYear()).slice(-2);
+    return `${dd}-${mm}-${yy}`;
+  };
+
   const months = buildMonthsRange(data?.[0]?.start_date, data?.[0]?.end_date) || [];
   const totalMonths = months.length || 60; // fallback to 60 if none
   const yearGroups = [];
@@ -1190,7 +1420,7 @@ const DetailedSchedule = () => {
       <div className="ruda-header-container">
         <div className="ruda-header-left">
           {/* Add your logo here: <img src="/path/to/logo.png" alt="Logo" className="ruda-header-logo" /> */}
-          <h1 className="ruda-title">{data[0].project}</h1>
+          <h1 className="ruda-title">{data?.[0]?.project || 'Project Schedule'}</h1>
         </div>
         <button
           onClick={async () => {
@@ -1210,7 +1440,7 @@ const DetailedSchedule = () => {
 
               data.forEach((project, pIndex) => {
                 allPhases.add(pIndex);
-                (project.tasks || []).forEach((task, tIndex) => {
+                ((project.tasks || project.subtasks || []) || []).forEach((task, tIndex) => {
                   const pkgKey = `${pIndex}-${tIndex}`;
                   if (task.subtasks && task.subtasks.length > 0) {
                     allPackages.add(pkgKey);
@@ -1392,13 +1622,13 @@ const DetailedSchedule = () => {
                         )}
                       </button>
                       {(() => {
-                        const hasChildren = !!(project.tasks && project.tasks.length > 0);
+                        const hasChildren = !!(((project.tasks || project.subtasks) && (project.tasks || project.subtasks).length > 0));
                         // Auto-compute text color based on background brightness
                         const textColor = getTextForLevel(0);
                         return (
                           <div style={{ display: "inline-flex", alignItems: "center", gap: 6 }}>
                             <span className="ruda-wbs-icon">{renderIconSVG(0, false, 18, textColor)}</span>
-                            <span style={{ lineHeight: 1.1, color: textColor }}>{project.project.split(" ").slice(0, 5).join(" ")}...</span>
+                            <span style={{ lineHeight: 1.1, color: textColor }}>{(project.project || project.name || 'Project').split(" ").slice(0, 5).join(" ")}...</span>
                             {renderChildIndicator(hasChildren, expandedPhases.has(pIndex), textColor)}
                           </div>
                         );
@@ -1409,18 +1639,18 @@ const DetailedSchedule = () => {
                       {project.duration}
                     </td>
                     <td className="ruda-phase-header text-end">
-                      {project.start_date}
+                      {formatDateDisplay(project.start_date)}
                     </td>
                     <td className="ruda-phase-header text-end">
-                      {project.end_date}
+                      {formatDateDisplay(project.end_date)}
                     </td>
                       <td colSpan={totalMonths} className="ruda-timeline-cell" style={{ backgroundColor: getColorForLevel(0) }}>
-                      {renderTimeline ? renderTimeline(project, 0, `${pIndex}`, !(project.tasks && project.tasks.length > 0)) : null}
+                      {renderTimeline ? renderTimeline(project, 0, `${pIndex}`, !((project.tasks || project.subtasks) && (project.tasks || project.subtasks).length > 0)) : null}
                     </td>
                   </tr>
                   {/* Render Tasks */}
                   {expandedPhases.has(pIndex) &&
-                    project.tasks.map((task, tIndex) => (
+                    (project.tasks || project.subtasks || []).map((task, tIndex) => (
                       <React.Fragment key={tIndex}>
                         <tr
                           className="ruda-package-row cursor-pointer "
@@ -1462,8 +1692,8 @@ const DetailedSchedule = () => {
                           </td>
                           <td className="ruda-cell right">-</td>
                           <td className="ruda-cell right">{task.duration}</td>
-                          <td className="ruda-cell right">{task.start_date}</td>
-                          <td className="ruda-cell right">{task.end_date}</td>
+                          <td className="ruda-cell right">{formatDateDisplay(task.start_date)}</td>
+                          <td className="ruda-cell right">{formatDateDisplay(task.end_date)}</td>
 
                           <td colSpan={totalMonths} className="ruda-timeline-cell" style={{ backgroundColor: (task.subtasks && task.subtasks.length > 0) ? getColorForLevel(1) : '#ffffff' }}>
                             {renderTimeline ? renderTimeline(task, 1, `${pIndex}-${tIndex}`, !(task.subtasks && task.subtasks.length > 0)) : null}
@@ -1477,7 +1707,6 @@ const DetailedSchedule = () => {
                     ))}
                 </React.Fragment>
               ))}
-
               <tr>
                 <td className="ruda-total-cell text-end">Total</td>
                 <td className="ruda-total-cell text-end">0</td>
