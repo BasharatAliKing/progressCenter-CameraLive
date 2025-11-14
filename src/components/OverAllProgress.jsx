@@ -188,7 +188,7 @@ const handleExportAQI = async () => {
                 Actual vs Planned Progress
               </p>
             </div>
-            <div className="flex flex-col w-full h-auto flex-wrap gap-4">
+            <div className="flex flex-col w-full  flex-wrap gap-4">
               {/* <!-- SPI Box --> */}
               <div className="bg-white w-full shadow-md rounded-lg p-4  text-center">
                 <div className="text-lg font-semibold mb-2 text-center">
@@ -291,7 +291,7 @@ const handleExportAQI = async () => {
       </div>
     </div>
         </div>
-        <div className="bg-gray-100 mb-auto rounded-xl shadow-lg p-6 col-span-4 mx-auto relative">
+        <div className="bg-gray-100 mb-auto rounded-xl shadow-lg p-6 col-span-4  relative">
           {/* Header with image */}
           <div className="relative flex items-center justify-between mb-4">
             <div className="flex items-center">
