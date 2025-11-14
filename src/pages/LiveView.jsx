@@ -124,7 +124,7 @@ export default function LiveDashboard() {
           </button>
       </div>
     </div>
-      <div className="flex min-h-[90vh]  flex-col gap-5 inset-0 bg-[#121212e2]">
+      <div className="flex min-h-[90vh] px-5 flex-col gap-5 inset-0 bg-[#121212e2]">
         {/* left bar */}
         <div className="absolute z-[9] flex flex-col gap-4 top-40 right-12 items-end">
           {/* AI Button */}
