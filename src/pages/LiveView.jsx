@@ -90,7 +90,7 @@ export default function LiveDashboard() {
         {/* Breadcrumb */}
         <div className="text-sm text-white mb-1">
           <Link className="hover:text-gray-100 duration-500 hover:scale-105" to='/dashboard'>Dashboard</Link> /
-           <Link to={`/camera/${params.id}`} className="text-white">{" "}{cameras.location}</Link> /
+           <Link to={`/project/${params.id}`} className="text-white">{" "}{cameras.location}</Link> /
           <span className="font-medium text-white">{" "}{cameras.name}</span>
         </div>
         {/* Title */}
@@ -291,3 +291,4 @@ export default function LiveDashboard() {
     </div>
   );
 }
+

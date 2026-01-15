@@ -34,7 +34,6 @@ const LiveProgress = () => {
         setAllCameras(data.cameras);
         const foundCamera = data.cameras.find((cam) => cam._id === params.id);
         setMainCamera(foundCamera);
-
         if (foundCamera?.location) {
           const sameLocation = data.cameras.filter(
             (cam) => cam.location === foundCamera.location

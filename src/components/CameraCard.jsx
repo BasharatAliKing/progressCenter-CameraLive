@@ -20,11 +20,11 @@ const CameraCard = ({camera, funcimg }) => {
           size="20"
           className="cursor-pointer bg-white absolute top-3 right-2 p-1 rounded-sm"
         />
-        <img
+        <Link to={`/camera/${camera._id}`}><img
           src={`${IMAGE_PATH}${camera.image}`}
           alt="my-img"
           className="rounded-md cursor-pointer"
-        />
+        /></Link>
       </div>
       <div className="flex flex-col gap-2">
         <h1 className="flex items-center gap-1 font-semibold text-base">

@@ -222,7 +222,7 @@ const handleExportAQI = async () => {
               <h3 className="text-lg font-semibold mb-2 text-center">
                 Progress Meter
               </h3>
-              <ResponsiveContainer width="100%" height={200}>
+              <ResponsiveContainer width="100%" className="mt-10" height={200}>
                 <PieChart>
                   <Pie
                     data={datachart}

@@ -32,17 +32,17 @@ const styles = `
 .ruda-month-header{background:#f9fafb;color:#6b7280;font-size:10px;padding:8px 4px;text-align:center;font-weight:600;position:sticky;top:0;z-index:10;white-space:nowrap}
 .ruda-cell{padding:8px 12px;border-bottom:1px solid #f3f4f6;background:transparent;white-space:nowrap}
 .ruda-cell.right{text-align:right}
-.phases-packages{width:360px;min-width:260px;position:sticky;left:0;z-index:5;background:#fff}
+.phases-packages{width:360px;min-width:260px;max-width:400px;position:sticky;left:0;z-index:5;background:#fff}
 .ruda-table tbody .phases-packages{box-shadow:2px 0 4px rgba(0,0,0,0.08)}
-.ruda-phase-header{font-weight:600;padding:14px 16px;font-size:13px;position:sticky;left:0;z-index:5}
+.ruda-phase-header{font-weight:600;padding:14px 16px;font-size:13px;position:sticky;left:0;z-index:5;max-width:400px;white-space:normal!important;overflow-wrap:anywhere;word-break:break-word}
 .ruda-phase-row:hover,.ruda-package-row:hover,.ruda-subpackage-row:hover{opacity:0.95}
-.package-cell{padding-left:24px;font-weight:500;color:#1f2937;position:sticky;left:0;z-index:5;box-shadow:2px 0 4px rgba(0,0,0,0.08)}
-.subpackage-cell{padding-left:40px;font-weight:500;color:#374151;position:sticky;left:0;z-index:5;box-shadow:2px 0 4px rgba(0,0,0,0.08)}
-.activity-cell{padding-left:56px;color:#4b5563;position:sticky;left:0;z-index:5;box-shadow:2px 0 4px rgba(0,0,0,0.08)}
+.package-cell{padding-left:24px;font-weight:500;color:#1f2937;position:sticky;left:0;z-index:5;box-shadow:2px 0 4px rgba(0,0,0,0.08);max-width:400px;white-space:normal!important;overflow-wrap:anywhere;word-break:break-word}
+.subpackage-cell{padding-left:40px;font-weight:500;color:#374151;position:sticky;left:0;z-index:5;box-shadow:2px 0 4px rgba(0,0,0,0.08);max-width:400px;white-space:normal!important;overflow-wrap:anywhere;word-break:break-word}
+.activity-cell{padding-left:56px;color:#4b5563;position:sticky;left:0;z-index:5;box-shadow:2px 0 4px rgba(0,0,0,0.08);max-width:400px;white-space:normal!important;overflow-wrap:anywhere;word-break:break-word}
 .ruda-timeline-cell{position:relative;height:42px}
 .ruda-bar-wrapper{position:relative;height:42px}
-.ruda-bar{position:absolute;height:20px;border-radius:50px;top:50%;transform:translateY(-50%);border:none;box-shadow:0 2px 6px rgba(0,0,0,0.15);transition:all .12s ease;opacity:0.98}
-.ruda-bar:hover{transform:translateY(-50%) scale(1.03);box-shadow:0 3px 10px rgba(0,0,0,0.25);opacity:1}
+.ruda-bar{position:absolute;height:12px;border-radius:50px;top:50%;transform:translateY(-50%);border:none;box-shadow:0 2px 6px rgba(0,0,0,0.15);transition:all .12s ease;opacity:0.98}
+.ruda-bar:hover{transform:translateY(-50%) scale(1.01);box-shadow:0 3px 10px rgba(0,0,0,0.25);opacity:1}
 /* Tooltip */
 .ruda-tooltip{position:absolute;bottom:calc(100% + 10px);left:50%;transform:translateX(-50%) translateY(6px) scale(.98);padding:12px 14px;background:linear-gradient(180deg,rgba(12,14,20,0.98),rgba(8,10,12,0.96));color:#fff;border-radius:12px;min-width:200px;max-width:420px;backdrop-filter:blur(6px);border:1px solid rgba(255,255,255,0.04);box-shadow:0 18px 48px rgba(3,8,23,0.55);opacity:0;pointer-events:none;transition:opacity 180ms ease,transform 220ms cubic-bezier(.2,.85,.25,1);display:flex;gap:12px;align-items:center}
 .ruda-tooltip::after{content:'';position:absolute;top:100%;left:50%;transform:translateX(-50%);border-width:8px 8px 0 8px;border-style:solid;border-color:rgba(12,14,20,0.98) transparent transparent transparent}
@@ -105,7 +105,7 @@ if (typeof document !== "undefined") {
   styleSheet.innerText = styles;
   document.head.appendChild(styleSheet);
 }
-const API_URL = import.meta.env.VITE_API_URL; // ✅ Correct way in Vite
+const API_URL = import.meta.env.VITE_API_URL;  // ✅ Correct way in Vite
  const DetailedSchedule = () => {
   const [data,setData]=useState([]);
   const [expandedPhases, setExpandedPhases] = useState(new Set([0]));
@@ -1290,7 +1290,7 @@ const API_URL = import.meta.env.VITE_API_URL; // ✅ Correct way in Vite
                 return (
                   <div style={{ display: "inline-flex", alignItems: "center", gap: 6 }}>
                     <span className="ruda-wbs-icon">{renderIconSVG(level, isActivity, 14, iconFill)}</span>
-                    <span style={{ lineHeight: 1.05, color: rowTextColor }}>{st.name}</span>
+                    <span style={{ lineHeight: 1.05, color: rowTextColor, display: 'inline-block', maxWidth: '400px', whiteSpace: 'normal', overflowWrap: 'anywhere', wordBreak: 'break-word' }}>{st.name}</span>
                     {renderChildIndicator(st.subtasks && st.subtasks.length > 0, expandedSubpackages.has(key), rowTextColor)}
                   </div>
                 );
@@ -1457,14 +1457,11 @@ const API_URL = import.meta.env.VITE_API_URL; // ✅ Correct way in Vite
                   traverse(task.subtasks, pkgKey);
                 });
               });
-
               setExpandedPhases(allPhases);
               setExpandedPackages(allPackages);
               setExpandedSubpackages(allSubpackages);
-
               // Wait for the DOM to render expanded content
               await new Promise((r) => setTimeout(r, 300));
-
               // Add PDF export class to remove sticky positioning for PDF
               if (pdfRef.current) {
                 pdfRef.current.classList.add('pdf-export');
@@ -1628,7 +1625,7 @@ const API_URL = import.meta.env.VITE_API_URL; // ✅ Correct way in Vite
                         return (
                           <div style={{ display: "inline-flex", alignItems: "center", gap: 6 }}>
                             <span className="ruda-wbs-icon">{renderIconSVG(0, false, 18, textColor)}</span>
-                            <span style={{ lineHeight: 1.1, color: textColor }}>{(project.project || project.name || 'Project').split(" ").slice(0, 5).join(" ")}...</span>
+                            <span style={{ lineHeight: 1.1, color: textColor, display: 'inline-block', maxWidth: '400px', whiteSpace: 'normal', overflowWrap: 'anywhere', wordBreak: 'break-word' }}>{project.project || project.name || 'Project'}</span>
                             {renderChildIndicator(hasChildren, expandedPhases.has(pIndex), textColor)}
                           </div>
                         );
@@ -1684,7 +1681,7 @@ const API_URL = import.meta.env.VITE_API_URL; // ✅ Correct way in Vite
                               return (
                                 <div style={{ display: "inline-flex", alignItems: "center", gap: 6 }}>
                                   <span className="ruda-wbs-icon">{renderIconSVG(1, isActivity, 16, iconFill)}</span>
-                                  <span style={{ lineHeight: 1.05, color: textColor }}>{task.name}</span>
+                                  <span style={{ lineHeight: 1.05, color: textColor, display: 'inline-block', maxWidth: '400px', whiteSpace: 'normal', overflowWrap: 'anywhere', wordBreak: 'break-word' }}>{task.name}</span>
                                   {renderChildIndicator(task.subtasks && task.subtasks.length > 0, expandedPackages.has(`${pIndex}-${tIndex}`), textColor)}
                                 </div>
                               );

@@ -72,10 +72,10 @@ export default function Home() {
       <div className=" mx-auto px-6 py-10">
         <BarComponent />
         {/* Cards Grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4  gap-6">
           {cameras.map((project, index) => (
             <Link
-              to={`/camera/${project._id}`}
+              to={`/project/${project._id}`}
               key={index}
               className="bg-[#f7f5ee]/90 cursor-pointer backdrop-blur-md rounded-2xl shadow-sm border border-gray-200 p-4 flex flex-col justify-between hover:shadow-md transition"
             >

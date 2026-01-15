@@ -9,9 +9,10 @@ import Login from './pages/Login'
 import Camera from './pages/Camera'
 import LiveView from './pages/LiveView'
 import AiPeopleFlow from './pages/AIPeopleFlow'
+import TimeLapse from './pages/TimeLapse'
 const App = () => {
   return (
-     <Router>
+     <Router className='font-dancing'>
       <Routes>
         <Route path='/login' element={<Login/>} />
         <Route path='/' element={<MainOutlet/>} >
@@ -19,7 +20,8 @@ const App = () => {
           <Route path='/dashboard' element={<Home/>} />
           <Route path='map' element={<MapView/>} />
           <Route path='project-view' element={<ProjectView/>} />
-          <Route path='camera/:id' element={<Camera/>} />
+          <Route path='project/:id' element={<Camera/>} />
+          <Route path='/camera/:id' element={<TimeLapse/>} />
           <Route path='live-view/:id' element={<LiveView/>} />
           <Route path='ai-peopleflow' element={<AiPeopleFlow/>} />
         </Route>
