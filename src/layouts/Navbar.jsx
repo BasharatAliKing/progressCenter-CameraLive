@@ -25,7 +25,7 @@ const Navbar = () => {
 
   return (
     <div
-      className="fixed top-0 left-0 right-0 h-16 bg-white/90 backdrop-blur-md 
+      className="fixed top-0 left-0 right-0 h-16 bg-[#e7e4dc] backdrop-blur-md 
                  flex items-center justify-between px-6 shadow-md z-40 border-b border-gray-200"
     >
       {/* Left - Logo + Search */}
@@ -89,18 +89,12 @@ const Navbar = () => {
 
           {/* Dropdown Menu */}
           {menuOpen && (
-            <div
-              className="absolute right-0 mt-2 w-44 bg-white border border-gray-200 rounded-lg shadow-lg py-1 z-50 animate-fade-in"
-            >
-              <button
-                className="flex items-center w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-              >
+            <div className="absolute right-0 mt-2 w-44 bg-white border border-gray-200 rounded-lg shadow-lg py-1 z-50 animate-fade-in">
+              <button className="flex items-center w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
                 <Settings size={16} className="mr-2" />
                 Account
               </button>
-              <button
-                className="flex items-center w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-              >
+              <button className="flex items-center w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
                 <LogOut size={16} className="mr-2" />
                 Logout
               </button>

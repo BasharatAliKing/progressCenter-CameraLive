@@ -21,6 +21,7 @@ const projects = [
 const LiveProgress = () => {
   const [loading, setLoading] = useState(false);
   const [showImg, setShowImg] = useState(false);
+  const [selectedCameraData, setSelectedCameraData] = useState(null);
   const params = useParams();
   const [allCameras, setAllCameras] = useState([]);
   const [locationCameras, setLocationCameras] = useState([]);
@@ -45,8 +46,14 @@ const LiveProgress = () => {
       console.error("Error fetching cameras:", error);
     }
   };
-  const funcimg = (val) => {
-    setShowImg(val);
+  const funcimg = (data) => {
+    if (typeof data === 'boolean') {
+      setShowImg(data);
+      if (!data) setSelectedCameraData(null);
+    } else {
+      setShowImg(data.show);
+      setSelectedCameraData(data);
+    }
   };
   const handleReload = async () => {
     setLoading(true);
@@ -60,16 +67,46 @@ const LiveProgress = () => {
     fetchCameras();
   }, [params.id]);
 
+  // Parse date and time from image filename (format: YYYYMMDDHHMMSS)
+  const parseImageDateTime = (imageUrl) => {
+    if (!imageUrl) return { time: '', date: '' };
+    
+    // Extract filename from path (e.g., "uploads/20260121110939.jpg" -> "20260121110939")
+    const filename = imageUrl.split('/').pop().split('.')[0];
+    
+    // Check if filename matches the date format (14 digits)
+    if (filename && filename.match(/^\d{14}$/)) {
+      const year = filename.substring(0, 4);
+      const month = filename.substring(4, 6);
+      const day = filename.substring(6, 8);
+      const hour = filename.substring(8, 10);
+      const minute = filename.substring(10, 12);
+      const second = filename.substring(12, 14);
+      
+      // Create date object
+      const date = new Date(`${year}-${month}-${day}T${hour}:${minute}:${second}`);
+      
+      if (!isNaN(date.getTime())) {
+        const time = date.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true });
+        const dateStr = date.toLocaleDateString('en-US', { day: '2-digit', month: 'short', year: 'numeric' });
+        return { time, date: dateStr };
+      }
+    }
+    
+    return { time: '', date: '' };
+  };
+
   return (
     <div className="flex flex-col gap-5">
-      {showImg ? (
+      {showImg && selectedCameraData ? (
         <div className="flex flex-col bg-[#00000068] fixed w-full h-screen items-center justify-center top-0 left-0 z-10">
           <h1 className="bg-white w-1/2 rounded-t-md flex items-center justify-between font-medium p-2">
-            Camera 1 · 2:30 pm · 08 Oct, 2025{" "}
+            {selectedCameraData.camera.name} · {parseImageDateTime(selectedCameraData.image).time} · {parseImageDateTime(selectedCameraData.image).date}{" "}
             <span
               className="cursor-pointer text-sm"
               onClick={(e) => {
                 setShowImg(false);
+                setSelectedCameraData(null);
               }}
             >
               <CgClose
@@ -78,7 +115,7 @@ const LiveProgress = () => {
               />
             </span>
           </h1>
-          <img className="flex w-1/2" src="/card-1.jpg" alt="" />
+          <img className="flex w-1/2" src={`${IMAGE_PATH}${selectedCameraData.image}`} alt="" />
         </div>
       ) : null}
       <div className="flex gap-5">
@@ -171,6 +208,7 @@ const LiveProgress = () => {
                 <RxReload
                   size="22"
                   onClick={handleReload}
+                  title="Refresh"
                   className="cursor-pointer bg-white text-primary p-1 rounded-md"
                 />
               </div>

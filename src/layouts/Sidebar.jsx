@@ -27,7 +27,7 @@ const Sidebar = () => {
 
   return (
     <div
-      className={`fixed top-0 left-0 h-full bg-white shadow-md border-r border-gray-200 
+      className={`fixed top-0 left-0 h-full bg-[#e7e4dc] shadow-md  
                   flex flex-col justify-between transition-all duration-300 z-40 
                   ${expanded ? "w-64" : "w-20"}`}
       onMouseEnter={() => setExpanded(true)}
