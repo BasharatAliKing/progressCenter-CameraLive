@@ -18,6 +18,7 @@ export default function TimeLapseView() {
   const [zoom, setZoom] = useState(1);
   const [cameraData, setCameraData] = useState(null);
   const [cameraLoading, setCameraLoading] = useState(true);
+  const [isDownloading, setIsDownloading] = useState(false);
 
   // Fetch camera details
   useEffect(() => {
@@ -119,15 +120,96 @@ export default function TimeLapseView() {
     setIsPlaying(false);
   };
 
-  const handleDownload = () => {
-    if (allFrames[currentFrameIndex]) {
-      const frameUrl = `${VITE_IMAGE_PATH}${allFrames[currentFrameIndex].url}`;
-      const link = document.createElement("a");
-      link.href = frameUrl;
-      link.download = `timelapse-frame-${currentFrameIndex}.jpg`;
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
+  const handleDownload = async () => {
+    if (allFrames.length === 0) return;
+    
+    setIsDownloading(true);
+    try {
+      // Create canvas
+      const canvas = document.createElement('canvas');
+      const ctx = canvas.getContext('2d');
+      
+      // Load first frame to get dimensions
+      const firstImage = await new Promise((resolve, reject) => {
+        const img = new Image();
+        img.crossOrigin = 'anonymous';
+        img.onload = () => resolve(img);
+        img.onerror = reject;
+        img.src = `${VITE_IMAGE_PATH}${allFrames[0].url}`;
+      });
+
+      canvas.width = firstImage.naturalWidth;
+      canvas.height = firstImage.naturalHeight;
+      
+      // Create MediaRecorder with canvas
+      const stream = canvas.captureStream(2); // 2 fps
+      const mediaRecorder = new MediaRecorder(stream, {
+        mimeType: 'video/webm',
+      });
+      
+      const chunks = [];
+      mediaRecorder.ondataavailable = (e) => {
+        if (e.data.size > 0) chunks.push(e.data);
+      };
+      
+      mediaRecorder.onstop = () => {
+        const blob = new Blob(chunks, { type: 'video/webm' });
+        const url = URL.createObjectURL(blob);
+        
+        // Create download link
+        const downloadLink = document.createElement('a');
+        downloadLink.href = url;
+        downloadLink.download = `timelapse-${new Date().toISOString().split('T')[0]}-${Date.now()}.webm`;
+        document.body.appendChild(downloadLink);
+        downloadLink.click();
+        document.body.removeChild(downloadLink);
+        
+        // Clean up
+        setTimeout(() => URL.revokeObjectURL(url), 100);
+        setIsDownloading(false);
+      };
+      
+      mediaRecorder.start();
+      
+      // Draw frames to canvas
+      let frameIndex = 0;
+      const frameRate = 2; // 2 frames per second
+      const frameDurationMs = 1000 / frameRate; // 500ms per frame
+      
+      const drawFrameSequence = async () => {
+        if (frameIndex < allFrames.length) {
+          try {
+            const frameImage = await new Promise((resolve, reject) => {
+              const img = new Image();
+              img.crossOrigin = 'anonymous';
+              img.onload = () => resolve(img);
+              img.onerror = reject;
+              img.src = `${VITE_IMAGE_PATH}${allFrames[frameIndex].url}`;
+            });
+            
+            ctx.drawImage(frameImage, 0, 0, canvas.width, canvas.height);
+            frameIndex++;
+            
+            // Schedule next frame
+            setTimeout(drawFrameSequence, frameDurationMs);
+          } catch (error) {
+            console.error(`Error loading frame ${frameIndex}:`, error);
+            frameIndex++;
+            setTimeout(drawFrameSequence, frameDurationMs);
+          }
+        } else {
+          // All frames processed, stop recording
+          mediaRecorder.stop();
+        }
+      };
+      
+      // Start drawing frames
+      drawFrameSequence();
+      
+    } catch (error) {
+      console.error('Error creating video:', error);
+      setIsDownloading(false);
+      alert('Failed to create video. Please try again.');
     }
   };
 
@@ -170,10 +252,23 @@ export default function TimeLapseView() {
           </h1>
           <button
             onClick={handleDownload}
-            className="flex items-center gap-2 px-5 py-2 bg-primary rounded-lg transition-colors cursor-pointer font-medium text-white"
+            disabled={isDownloading}
+            className="flex items-center gap-2 px-5 py-2 bg-primary rounded-lg transition-colors cursor-pointer font-medium text-white disabled:opacity-70 disabled:cursor-not-allowed"
           >
-            <Download size={20} />
-            Download
+            {isDownloading ? (
+              <>
+                <svg className="animate-spin h-5 w-5" fill="none" viewBox="0 0 24 24">
+                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+                Creating...
+              </>
+            ) : (
+              <>
+                <Download size={20} />
+                Download
+              </>
+            )}
           </button>
         </div>
       </div>
