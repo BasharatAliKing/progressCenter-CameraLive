@@ -29,6 +29,7 @@ export default function TimeLapse() {
   const [availableDates, setAvailableDates] = useState([]);
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [currentMonth, setCurrentMonth] = useState(new Date());
+  const [showToolsMenu, setShowToolsMenu] = useState(false);
   
   // Handle click outside to close menu
   useEffect(() => {
@@ -299,10 +300,17 @@ export default function TimeLapse() {
         formatTime={formatTime}
         formatDate={formatDate}
         onToggleMenu={() => setIsTimeMenuOpen(!isTimeMenuOpen)}
+        showToolsMenu={showToolsMenu}
+        onToggleToolsMenu={() => setShowToolsMenu(!showToolsMenu)}
       />
 
       <div className="flex min-h-[80vh] px-5 flex-col gap-5 inset-0 bg-[#121212e2]">
-        <TimelapseSidebar aiActive={aiActive} isFullscreen={isFullscreen} onFullscreen={() => setIsFullscreen(true)} onPrintShot={() => setIsPrintShotOpen(true)} />
+        <TimelapseSidebar 
+          aiActive={aiActive} 
+          isFullscreen={isFullscreen} 
+          onFullscreen={() => setIsFullscreen(true)} 
+          onPrintShot={() => setIsPrintShotOpen(true)}
+        />
         <TimelapseViewer
           imageUrl={imageUrl}
           zoom={zoom}
