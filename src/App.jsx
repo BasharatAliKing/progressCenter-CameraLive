@@ -25,7 +25,7 @@ const App = () => {
           <Route path='project/:id' element={<Camera/>} />
           <Route path='/camera/:id' element={<TimeLapse/>} />
           <Route path='/camera/:id/timelapse' element={<CreateTimelapse/>} />
-          <Route path='/timelapse/:cameraId/view' element={<TimeLapseView/>} />
+          <Route path='/timelapse/:cameraId/video/:videoId' element={<TimeLapseView/>} />
           <Route path='live-view/:id' element={<LiveView/>} />
           <Route path='ai-peopleflow' element={<AiPeopleFlow/>} />
         </Route>
