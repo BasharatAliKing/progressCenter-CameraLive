@@ -13,6 +13,8 @@ export default function CreateTimelapse() {
   const [selectedDuration, setSelectedDuration] = useState("1 Day");
   const [perDay, setPerDay] = useState(2);
   const [timeFilter, setTimeFilter] = useState("24h");
+  const [quality, setQuality] = useState("720p");
+  const [frameDuration, setFrameDuration] = useState(1);
   const [isCreating, setIsCreating] = useState(false);
   const [availableDays, setAvailableDays] = useState(null);
   const [isRangeLoading, setIsRangeLoading] = useState(false);
@@ -170,8 +172,8 @@ export default function CreateTimelapse() {
         timeFilter,
         username: "admin",
         userId: "12345",
-        frameDuration: 1,
-        quality: "720p",
+        frameDuration,
+        quality,
       };
       const apiUrl = `${API_URL}/snapshots/${params.id}/timelapse/video`;
       const response = await fetch(apiUrl, {
@@ -184,8 +186,7 @@ export default function CreateTimelapse() {
       if (response.ok) {
         const data = await response.json();
         setShowCreateModal(false);
-        alert("LiveLapse creation started! You will be notified when it's ready.");
-        
+        alert(data.message || "LiveLapse creation started! You will be notified when it's ready.");
         // Refresh timelapses list
         const userId = "12345";
         const res = await fetch(
@@ -203,7 +204,7 @@ export default function CreateTimelapse() {
     }
   };
   // Sample data - replace with actual API calls
-
+ console.log(timelapses);
   return (
     <div className="min-h-screen bg-[url('/Sunrise.jpg')] bg-cover bg-center bg-no-repeat">
       {/* Header */}
@@ -302,17 +303,13 @@ export default function CreateTimelapse() {
                   >
                     <div className="relative">
                       <div className="relative aspect-video bg-gray-200">
-                        {timelapse.thumbnail ? (
-                          <img
-                            src={`${VITE_IMAGE_PATH}${timelapse.thumbnail}`}
+                        
+                          <video
+                            src={`${VITE_IMAGE_PATH}${timelapse.url}`}
                             alt="Timelapse thumbnail"
                             className="w-full h-full object-cover"
                           />
-                        ) : (
-                          <div className="w-full h-full flex items-center justify-center bg-gray-300">
-                            <Play size={32} className="text-gray-500" />
-                          </div>
-                        )}
+                       
                         <div className="absolute inset-0 flex items-center justify-center">
                           <div className="w-14 h-14 bg-white/90 hover:bg-white rounded-full flex items-center justify-center shadow-lg transition-all hover:scale-110">
                             <Play size={24} className="text-gray-800 ml-1" fill="currentColor" />
@@ -344,9 +341,9 @@ export default function CreateTimelapse() {
                                 e.stopPropagation();
                                 setOpenDropdown(null);
                                 sessionStorage.setItem("timelapsData", JSON.stringify(timelapse));
-                                navigate(`/timelapse/${params.id}/view`);
+                                navigate(`/timelapse/${params.id}/video/${timelapse._id }`);
                               }}
-                              className="w-full px-4 cursor-pointer font-medium text-sm py-2 text-left text-sm text-gray-700 hover:bg-gray-100 flex items-center gap-2"
+                              className="w-full px-4 cursor-pointer font-medium py-2 text-left text-sm text-gray-700 hover:bg-gray-100 flex items-center gap-2"
                             >
                               <Play size={16} />
                               View
@@ -407,10 +404,23 @@ export default function CreateTimelapse() {
                       </div>
 
                       <div>
-                        <p className="text-xs text-gray-500 mb-1">Created on</p>
-                        <p className="text-sm text-gray-700">
+                        <p className="text-xs text-gray-500 mb-1">Requested on</p>
+                        <p className="text-sm text-black font-medium">
                           {timelapse.createdAt
-                            ? new Date(timelapse.createdAt).toLocaleString()
+                            ? (() => {
+                                const date = new Date(timelapse.createdAt);
+                                const time = date.toLocaleTimeString('en-US', { 
+                                  hour: 'numeric', 
+                                  minute: '2-digit', 
+                                  hour12: true 
+                                }).toLowerCase();
+                                const dateStr = date.toLocaleDateString('en-US', { 
+                                  day: 'numeric', 
+                                  month: 'short', 
+                                  year: 'numeric' 
+                                });
+                                return `${time} · ${dateStr}`;
+                              })()
                             : "N/A"}
                         </p>
                       </div>
@@ -424,7 +434,7 @@ export default function CreateTimelapse() {
                                 {(timelapse.username || "U").charAt(0).toUpperCase()}
                               </span>
                             </div>
-                            <span className="text-sm text-gray-900 font-medium">
+                            <span className="text-sm capitalize text-gray-900 font-medium">
                               {timelapse.username || "Unknown"}
                             </span>
                           </div>
@@ -486,7 +496,7 @@ export default function CreateTimelapse() {
               </div>
 
               {/* Content */}
-              <div className="flex-1 overflow-y-auto p-3 space-y-6 bg-gray-50">
+              <div className="flex-1 overflow-y-auto p-3 space-y-3 bg-gray-50">
                 {/* Duration Selection */}
                 <div className="bg-white rounded-xl p-3 shadow-sm border border-gray-100">
                   <label className="block text-sm font-semibold text-gray-700 mb-2">
@@ -518,7 +528,6 @@ export default function CreateTimelapse() {
                       "Choose the time range for your timelapse"}
                   </p>
                 </div>
-
                 {/* Images Per Day */}
                 <div className="bg-white rounded-xl p-3 shadow-sm border border-gray-100">
                   <label className="block text-sm font-semibold text-gray-700 mb-2">
@@ -602,6 +611,82 @@ export default function CreateTimelapse() {
                       "Capture images throughout the entire day"}
                     {timeFilter === "8-5" && "Capture images from 8 AM to 5 PM"}
                     {timeFilter === "6-6" && "Capture images from 6 AM to 6 PM"}
+                  </p>
+                </div>
+
+                {/* Video Quality */}
+                <div className="bg-white rounded-xl p-3 shadow-sm border border-gray-100">
+                  <label className="block text-sm font-semibold text-gray-700 mb-3">
+                    📹 Video Quality
+                  </label>
+                  <div className="space-y-3">
+                    <div className="flex items-center gap-3 cursor-pointer" onClick={() => setQuality("720p")}>
+                      <input
+                        type="radio"
+                        name="quality"
+                        value="720p"
+                        checked={quality === "720p"}
+                        onChange={() => setQuality("720p")}
+                        className="w-4 h-4 cursor-pointer"
+                      />
+                      <label className="flex-1 cursor-pointer">
+                        <div className="text-sm font-medium text-gray-900">720p HD</div>
+                        <div className="text-xs text-gray-500">Standard quality, smaller file size</div>
+                      </label>
+                    </div>
+                    <div className="flex items-center gap-3 cursor-pointer" onClick={() => setQuality("1080p")}>
+                      <input
+                        type="radio"
+                        name="quality"
+                        value="1080p"
+                        checked={quality === "1080p"}
+                        onChange={() => setQuality("1080p")}
+                        className="w-4 h-4 cursor-pointer"
+                      />
+                      <label className="flex-1 cursor-pointer">
+                        <div className="text-sm font-medium text-gray-900">1080p Full HD</div>
+                        <div className="text-xs text-gray-500">Premium quality, larger file size</div>
+                      </label>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Frame Duration */}
+                <div className="bg-white rounded-xl p-3 shadow-sm border border-gray-100">
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">
+                    ⏱️ Frame Duration (seconds)
+                  </label>
+                  <div className="relative">
+                    <input
+                      type="number"
+                      min="0.1"
+                      max="10"
+                      step="0.1"
+                      value={frameDuration}
+                      onChange={(e) => setFrameDuration(parseFloat(e.target.value) || 1)}
+                      className="w-full px-4 py-2 text-sm border-2 border-gray-200 rounded-lg text-gray-900 font-medium focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all"
+                    />
+                    <div className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm">
+                      sec
+                    </div>
+                  </div>
+                  <div className="flex gap-2 mt-3">
+                    {[0.1,0.5,1,2,0.05].map((num) => (
+                      <button
+                        key={num}
+                        onClick={() => setFrameDuration(num)}
+                        className={`flex-1 py-2 rounded-lg text-xs cursor-pointer font-medium transition-all ${
+                          frameDuration === num
+                            ? "bg-primary text-white shadow-md"
+                            : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+                        }`}
+                      >
+                        {num}s
+                      </button>
+                    ))}
+                  </div>
+                  <p className="text-xs text-gray-500 mt-2">
+                    Duration between each frame (lower = faster playback)
                   </p>
                 </div>
 

@@ -1,4 +1,4 @@
-import { ChevronLeft, Download, Share2, Volume2, VolumeX, Maximize2, Minimize2 } from 'lucide-react';
+import { ChevronLeft, Download, Share2 } from 'lucide-react';
 import React, { useEffect, useState, useRef } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 
@@ -15,8 +15,6 @@ const TimeLapseView = () => {
   const [videoData, setVideoData] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const [cameraLoading, setCameraLoading] = useState(true);
-  const [isMuted, setIsMuted] = useState(false);
-  const [isFullscreen, setIsFullscreen] = useState(false);
   const [isDownloading, setIsDownloading] = useState(false);
 
   // Fetch Camera Data
@@ -69,8 +67,7 @@ const TimeLapseView = () => {
     }
     try {
       setIsDownloading(true);
-      const videoUrl = `${API_URL}${videoData.url}`;
-      
+      const videoUrl = `${VITE_IMAGE_PATH}${videoData.url}`;
       const response = await fetch(videoUrl);
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
@@ -103,30 +100,6 @@ const TimeLapseView = () => {
     }
   };
 
-  // Handle Fullscreen
-  const handleFullscreen = async () => {
-    try {
-      if (!document.fullscreenElement) {
-        await videoRef.current?.requestFullscreen();
-        setIsFullscreen(true);
-      } else {
-        await document.exitFullscreen();
-        setIsFullscreen(false);
-      }
-    } catch (err) {
-      console.error("Fullscreen error:", err);
-    }
-  };
-
-  // Listen for fullscreen changes
-  useEffect(() => {
-    const handleFullscreenChange = () => {
-      setIsFullscreen(!!document.fullscreenElement);
-    };
-    document.addEventListener("fullscreenchange", handleFullscreenChange);
-    return () => document.removeEventListener("fullscreenchange", handleFullscreenChange);
-  }, []);
-
   if (isLoading || cameraLoading) {
     return (
       <div className="min-h-screen bg-[url('/Sunrise.jpg')] bg-cover bg-center bg-no-repeat flex items-center justify-center">
@@ -141,31 +114,31 @@ const TimeLapseView = () => {
     <div className=" bg-[url('/Sunrise.jpg')] bg-cover bg-center bg-no-repeat">
       {/* Header */}
       <div className="bg-white border-b border-gray-200">
-        <div className="max-w-7xl mx-auto px-6 py-4">
-          <div className="flex flex-col">
+        <div className="max-w-7xl mx-auto px-6 py-3 pt-5">
+          <div className="flex flex-row justify-between">
             {/* Left: Back Button and Title */}
+            <div className="flex flex-col ">
               <button
                 onClick={() => navigate(-1)}
-                className="flex items-center cursor-pointer text-gray-600 hover:text-gray-900 transition-colors"
+                className="flex items-center cursor-pointer text-gray-600 hover:text-primary transition-colors"
               >
                 <ChevronLeft size={20} />
                 <span className="text-sm font-medium">Back</span>
               </button>
-            <div className="flex items-center justify-between gap-4">
               <h1 className="text-2xl font-bold text-gray-900">
                 {cameraData?.name || "Camera"} - {cameraData?.location || cameraData?.area?.name || "Location"}
                 <span className="font-normal text-base ml-2">LiveLapse</span>
               </h1>
+            </div>
             {/* Right: Download Button */}
             <button
               onClick={handleDownload}
               disabled={isDownloading}
-              className="bg-primary border border-primary cursor-pointer text-white px-4 py-2 rounded-lg font-medium transition-colors flex items-center gap-2 disabled:opacity-50 shadow-sm"
+              className="bg-primary border my-auto border-primary cursor-pointer text-white px-4 py-2 rounded-lg font-medium transition-colors flex items-center gap-2 disabled:opacity-50 shadow-sm"
             >
               <Download size={18} />
               {isDownloading ? "Downloading..." : "Download"}
             </button>
-            </div>
 
           </div>
         </div>
