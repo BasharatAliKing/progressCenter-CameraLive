@@ -237,7 +237,7 @@ export default function UsersPage() {
   },[]);
   const credentialText = `Username: ${createdCredentials.username}
 Password: ${createdCredentials.password}
-Sign-in url: NESPAK.progresscenter.io`;
+Sign-in url: https://nespakprogresscenter.com/login`;
 
   return (
     <div
