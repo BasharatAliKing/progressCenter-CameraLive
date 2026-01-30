@@ -1,4 +1,5 @@
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useRef, useEffect, useMemo } from "react";
+import { useNavigate } from "react-router-dom";
 import {
   Bell,
   Globe2,
@@ -11,6 +12,8 @@ import {
 const Navbar = () => {
   const [menuOpen, setMenuOpen] = useState(false);
   const menuRef = useRef(null);
+  const navigate = useNavigate();
+  const [user, setUser] = useState(null);
 
   // Close menu when clicked outside
   useEffect(() => {
@@ -22,6 +25,40 @@ const Navbar = () => {
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
+
+  useEffect(() => {
+    const raw =
+      localStorage.getItem("auth_user") || localStorage.getItem("user_data");
+    if (raw) {
+      try {
+        setUser(JSON.parse(raw));
+      } catch (error) {
+        setUser(null);
+      }
+    }
+  }, []);
+
+  const initials = useMemo(() => {
+    const name = user?.username || user?.name || user?.fullName || "User";
+    return name
+      .split(" ")
+      .map((part) => part[0])
+      .slice(0, 2)
+      .join("")
+      .toUpperCase();
+  }, [user]);
+
+  const displayName =
+    user?.username || user?.name || user?.fullName || "User";
+  const displayRole = user?.role || "Viewer";
+
+  const handleLogout = () => {
+    localStorage.removeItem("auth_token");
+    localStorage.removeItem("auth_user");
+    localStorage.removeItem("user_data");
+    localStorage.removeItem("auth_expires_at");
+    navigate("/login", { replace: true });
+  };
 
   return (
     <div
@@ -69,13 +106,13 @@ const Navbar = () => {
             className="flex items-center space-x-2 cursor-pointer group select-none"
           >
             <div className="w-9 h-9 bg-primary text-white rounded-full flex items-center justify-center font-semibold">
-              A
+              {initials}
             </div>
             <div className="hidden md:flex flex-col leading-tight">
-              <span className="text-sm font-medium text-gray-800">
-                AbuBakar Shahzad
+              <span className="text-sm font-medium capitalize text-gray-800">
+                {displayName}
               </span>
-              <span className="text-xs text-gray-500">Admin</span>
+              <span className="text-xs text-gray-500 capitalize ">{displayRole}</span>
             </div>
 
             {/* Dropdown arrow */}
@@ -94,7 +131,10 @@ const Navbar = () => {
                 <Settings size={16} className="mr-2" />
                 Account
               </button>
-              <button className="flex items-center w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+              <button
+                className="flex items-center w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                onClick={handleLogout}
+              >
                 <LogOut size={16} className="mr-2" />
                 Logout
               </button>

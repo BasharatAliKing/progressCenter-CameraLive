@@ -5,6 +5,7 @@ import { BsGrid } from "react-icons/bs";
 import { MdOutlineSafetyCheck } from "react-icons/md";
 import { BiLocationPlus } from "react-icons/bi";
 import { Link } from "react-router-dom";
+import { getUserData } from "../utilities/auth";
 import BarComponent from "../components/BarComponent";
 const API_URL = import.meta.env.VITE_API_URL; // ✅ Correct way in Vite
 const IMAGE_PATH = import.meta.env.VITE_IMAGE_PATH; // Correct Image Path
@@ -43,13 +44,24 @@ const projects = [
 
 export default function Home() {
   const [cameras, setCameras] = useState([]);
-  useEffect(() => {
+  const userData= getUserData();  
+   useEffect(() => {
     const fetchCameras = async () => {
       try {
         const res = await fetch(`${API_URL}/camera`);
         const data = await res.json();
-        // ✅ Filter unique locations
-        const uniqueCameras = data.cameras.filter(
+       let camerasToShow = data.cameras;
+      console.log(camerasToShow);
+       // 🔒 If user is NOT admin, filter by assigned cameras
+       if (userData?.role !== "admin") {
+        const cameraIdSet = new Set(userData.cameras.map(String));
+      camerasToShow = data.cameras.filter(camera =>
+        cameraIdSet.has(camera._id.toString())
+      );
+      }
+     
+      // ✅ Filter unique locations
+        const uniqueCameras = camerasToShow.filter(
           (camera, index, self) =>
             index === self.findIndex((c) => c.location === camera.location)
         );

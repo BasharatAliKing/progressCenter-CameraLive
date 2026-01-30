@@ -2,16 +2,28 @@ import React, { useContext, useEffect, useState } from "react";
 import { BsGrid } from "react-icons/bs";
 import { IoEarthOutline } from "react-icons/io5";
 import { Link } from "react-router-dom";
+import { getUserData } from "../utilities/auth";
 const API_URL = import.meta.env.VITE_API_URL; // ✅ Correct way in Vite
 const BarComponent = () => {
    const [cameras, setCameras] = useState([]);
+   const userData = getUserData();
      useEffect(() => {
        const fetchCameras = async () => {
          try {
            const res = await fetch(`${API_URL}/camera`);
            const data = await res.json();
            // ✅ Filter unique locations
-         const uniqueCameras = data.cameras.filter(
+            let camerasToShow = data.cameras;
+
+      // 🔒 If user is NOT admin, filter by assigned cameras
+      const cameraIdSet = new Set(userData.cameras.map(String));
+
+      if (userData?.role !== "admin") {
+      camerasToShow = data.cameras.filter(camera =>
+        cameraIdSet.has(camera._id.toString())
+      );
+      }
+         const uniqueCameras = camerasToShow.filter(
            (camera, index, self) =>
              index === self.findIndex((c) => c.location === camera.location)
          );

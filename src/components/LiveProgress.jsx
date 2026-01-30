@@ -4,6 +4,7 @@ import { RxReload } from "react-icons/rx";
 import { CgClose } from "react-icons/cg";
 import { Link, useParams } from "react-router-dom";
 import { MapPin, SquarePen } from "lucide-react";
+import { getUserData } from "../utilities/auth";
 const API_URL = import.meta.env.VITE_API_URL; // ✅ Correct way in Vite
 const IMAGE_PATH = import.meta.env.VITE_IMAGE_PATH; // Correct Image Path
 const projects = [
@@ -26,17 +27,27 @@ const LiveProgress = () => {
   const [allCameras, setAllCameras] = useState([]);
   const [locationCameras, setLocationCameras] = useState([]);
   const [mainCamera, setMainCamera] = useState(null);
-
+  const userData = getUserData();
   const fetchCameras = async () => {
     try {
       const res = await fetch(`${API_URL}/camera`);
       const data = await res.json();
-      if (data?.cameras) {
-        setAllCameras(data.cameras);
-        const foundCamera = data.cameras.find((cam) => cam._id === params.id);
+       let camerasToShow = data.cameras;
+
+      // 🔒 If user is NOT admin, filter by assigned cameras
+      const cameraIdSet = new Set(userData.cameras.map(String));
+
+      if (userData?.role !== "admin") {
+      camerasToShow = data.cameras.filter(camera =>
+        cameraIdSet.has(camera._id.toString())
+      );
+      }
+      if (camerasToShow) {
+        setAllCameras(camerasToShow);
+        const foundCamera = camerasToShow.find((cam) => cam._id === params.id);
         setMainCamera(foundCamera);
         if (foundCamera?.location) {
-          const sameLocation = data.cameras.filter(
+          const sameLocation = camerasToShow.filter(
             (cam) => cam.location === foundCamera.location
           );
           setLocationCameras(sameLocation);
@@ -119,7 +130,7 @@ const LiveProgress = () => {
         </div>
       ) : null}
       <div className="flex gap-5">
-        <div className="flex flex-col gap-3 w-[250px] xl:w-[300px] bg-white h-[calc(100vh-134px)] p-5 overflow-y-scroll">
+        <div className="flex flex-col gap-3 w-[250px] xl:w-[300px] bg-white h-[calc(100vh-134px)] p-5 overflow-y-auto">
           <div className="flex flex-col gap-1">
             <h2 className="text-xs font-medium">
               <Link

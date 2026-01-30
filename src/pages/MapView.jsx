@@ -3,6 +3,7 @@ import { MapContainer, TileLayer, Marker } from "react-leaflet";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
 import { useNavigate } from "react-router-dom";
+import { getUserData } from "../utilities/auth";
 
 const API_URL = import.meta.env.VITE_API_URL;
 
@@ -36,13 +37,23 @@ const createBlinkingIcon = (name, city) =>
 const MapView = () => {
   const [cameras, setCameras] = useState([]);
   const navigate = useNavigate();
-
+  const userData = getUserData();
   // Fetch cameras from API
   const fetchCameras = async () => {
     try {
       const res = await fetch(`${API_URL}/camera`);
       const data = await res.json();
-      setCameras(data.cameras || []);
+        let camerasToShow = data.cameras;
+
+      // 🔒 If user is NOT admin, filter by assigned cameras
+      const cameraIdSet = new Set(userData.cameras.map(String));
+
+      if (userData?.role !== "admin") {
+      camerasToShow = data.cameras.filter(camera =>
+        cameraIdSet.has(camera._id.toString())
+      );
+      }
+      setCameras(camerasToShow || []);
     } catch (error) {
       console.error("Error fetching cameras:", error);
     }
@@ -71,7 +82,7 @@ const MapView = () => {
             position={[camera.coordinates.lat, camera.coordinates.lng]}
             icon={createBlinkingIcon(camera.location, camera.status)}
             eventHandlers={{
-              click: () => navigate(`/camera/${camera._id}`),
+              click: () => navigate(`/project/${camera._id}`),
             }}
           />
         ))}

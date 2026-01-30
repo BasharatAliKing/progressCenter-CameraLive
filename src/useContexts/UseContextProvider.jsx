@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import UserContext from "./UserContext";
+const API_URL = import.meta.env.VITE_API_URL;
 const UseContextProvider = ({children}) => {
   const [token, setToken] = useState(localStorage.getItem("token"));
   const [user, setUser] = useState(localStorage.getItem("user"));
@@ -9,7 +10,7 @@ const UseContextProvider = ({children}) => {
   useEffect(() => {
     const fetchCameras = async () => {
       try {
-        const res = await fetch("http://localhost:5000/api/camera");
+        const res = await fetch(`${API_URL}/camera`);
         const data = await res.json();
         setCameras(data);
       } catch (error) {

@@ -18,7 +18,7 @@ const Sidebar = () => {
 
   const menuItems = [
     { label: "Dashboard", icon: <LayoutDashboard size={22} />, path: "/dashboard" },
-    { label: "Teams & Users", icon: <User size={22} />, path: "/teams" },
+    { label: "Teams & Users", icon: <User size={22} />, path: "/users" },
     { label: "Documents", icon: <FileText size={22} />, path: "/documents" },
     { label: "ProgressLine", icon: <PlusSquare size={22} />, path: "/progressline" },
     { label: "Plugins", icon: <Puzzle size={22} />, path: "/plugins" },
