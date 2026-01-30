@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 
-const API_URL = "http://localhost:5000/api/login";
+const API_URL = import.meta.env.VITE_API_URL;
 
 const resolveExpiresAt = (data) => {
   const raw = data?.expiresAt ?? data?.expires_at ?? data?.tokenExpiresAt;
@@ -29,7 +29,7 @@ const Login = () => {
     setIsSubmitting(true);
     setError("");
     try {
-      const response = await fetch(API_URL, {
+      const response = await fetch(`${API_URL}/login`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email, password }),
