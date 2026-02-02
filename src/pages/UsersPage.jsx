@@ -203,7 +203,7 @@ export default function UsersPage() {
 
       setSubmitSuccess("User added successfully.");
       setCreatedCredentials({
-        username: formData.username.trim(),
+        username: formData.email.trim(),
         password: formData.password,
       });
       setShowCredentials(true);

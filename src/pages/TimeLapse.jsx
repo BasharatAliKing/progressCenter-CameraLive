@@ -113,15 +113,15 @@ export default function TimeLapse() {
     
     // Check if filename matches the date format (14 digits)
     if (filename && filename.match(/^\d{14}$/)) {
-      const year = filename.substring(0, 4);
-      const month = filename.substring(4, 6);
-      const day = filename.substring(6, 8);
-      const hour = filename.substring(8, 10);
-      const minute = filename.substring(10, 12);
-      const second = filename.substring(12, 14);
+      const year = parseInt(filename.substring(0, 4));
+      const month = parseInt(filename.substring(4, 6)) - 1; // Month is 0-indexed
+      const day = parseInt(filename.substring(6, 8));
+      const hour = parseInt(filename.substring(8, 10));
+      const minute = parseInt(filename.substring(10, 12));
+      const second = parseInt(filename.substring(12, 14));
       
-      // Create date object
-      const date = new Date(`${year}-${month}-${day}T${hour}:${minute}:${second}`);
+      // Create date object using local time components
+      const date = new Date(year, month, day, hour, minute, second);
       
       if (!isNaN(date.getTime())) {
         return date;
@@ -138,16 +138,14 @@ export default function TimeLapse() {
       const data = await res.json();
       if (data?.image?.url) {
         setImageUrl(data.image.url);
-        // Parse date from image filename
-        const parsedDate = parseImageDateTime(data.image.url);
-        setCurrentImageTime(parsedDate || new Date(data.image.createdAt));
+        // Use createdAt to match gallery time display
+        setCurrentImageTime(data.image.createdAt ? new Date(data.image.createdAt) : null);
         setSelectedSnapshot(data.image);
       }
     } catch (error) {
       console.error("Error fetching latest image:", error);
     }
   };
-
   // Fetch latest image on mount
   useEffect(() => {
     fetchLatestImage();
@@ -185,11 +183,17 @@ export default function TimeLapse() {
     try {
       const dateStr = formatDateParam(date);
       const res = await fetch(`${API_URL}/snapshots/camera/${params.id}?date=${dateStr}`);
-      console.log(`${API_URL}/snapshots/camera/${params.id}?date=${dateStr}`);
       const data = await res.json();
       // Data is directly an array of snapshots
       if (Array.isArray(data)) {
         setSnapshots(data);
+        // Auto-select the first snapshot if available
+        if (data.length > 0 && !selectedSnapshot) {
+          const firstSnapshot = data[0];
+          setImageUrl(firstSnapshot.url);
+          setCurrentImageTime(firstSnapshot.createdAt ? new Date(firstSnapshot.createdAt) : null);
+          setSelectedSnapshot(firstSnapshot);
+        }
       }
     } catch (error) {
       console.error("Error fetching snapshots:", error);
@@ -263,9 +267,8 @@ export default function TimeLapse() {
   const handleApplySnapshot = (snapshot = selectedSnapshot) => {
     if (snapshot) {
       setImageUrl(snapshot.url);
-      // Parse date from image filename
-      const parsedDate = parseImageDateTime(snapshot.url);
-      setCurrentImageTime(parsedDate || (snapshot.createdAt ? new Date(snapshot.createdAt) : null));
+      // Use createdAt to match gallery time display
+      setCurrentImageTime(snapshot.createdAt ? new Date(snapshot.createdAt) : null);
       setSelectedSnapshot(snapshot);
       setIsTimeMenuOpen(false);
     }

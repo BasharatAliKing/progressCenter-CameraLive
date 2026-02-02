@@ -23,7 +23,6 @@ export default function TimelapseBottomSheet({
   onApply
 }) {
   if (!isOpen) return null;
-
   return (
     <>
       {/* Backdrop */}
