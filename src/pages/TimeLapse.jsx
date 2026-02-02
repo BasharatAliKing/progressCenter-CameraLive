@@ -187,8 +187,8 @@ export default function TimeLapse() {
       // Data is directly an array of snapshots
       if (Array.isArray(data)) {
         setSnapshots(data);
-        // Auto-select the first snapshot if available
-        if (data.length > 0 && !selectedSnapshot) {
+        // Always select the first snapshot to show latest time
+        if (data.length > 0) {
           const firstSnapshot = data[0];
           setImageUrl(firstSnapshot.url);
           setCurrentImageTime(firstSnapshot.createdAt ? new Date(firstSnapshot.createdAt) : null);
@@ -262,7 +262,6 @@ export default function TimeLapse() {
   const changeMonth = (offset) => {
     setCurrentMonth(new Date(currentMonth.getFullYear(), currentMonth.getMonth() + offset, 1));
   };
-
   // Apply selected snapshot
   const handleApplySnapshot = (snapshot = selectedSnapshot) => {
     if (snapshot) {
@@ -276,7 +275,6 @@ export default function TimeLapse() {
 
   // Reload/refresh handler
   const handleReload = () => {
-    fetchLatestImage();
     fetchSnapshotsForDate(selectedDate);
   };
 
