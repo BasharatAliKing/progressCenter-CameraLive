@@ -1,4 +1,5 @@
 import React, { useEffect, useRef, useState } from "react";
+import { useParams } from "react-router-dom";
 import html2pdf from "html2pdf.js";
 // import LogManager from "../LogManager";
 // Updated CSS styles embedded in component
@@ -107,7 +108,10 @@ if (typeof document !== "undefined") {
 }
 const API_URL = import.meta.env.VITE_API_URL;  // ✅ Correct way in Vite
  const DetailedSchedule = () => {
-  const [data,setData]=useState([]);
+   const params = useParams();
+   const [data,setData]=useState([]);
+   const [projectName, setProjectName] = useState("");
+   const [cameraLoading, setCameraLoading] = useState(true);
   const [expandedPhases, setExpandedPhases] = useState(new Set([0]));
   const [expandedPackages, setExpandedPackages] = useState(new Set());
   const [expandedSubpackages, setExpandedSubpackages] = useState(new Set());
@@ -120,12 +124,46 @@ const API_URL = import.meta.env.VITE_API_URL;  // ✅ Correct way in Vite
   const [downloading, setDownloading] = useState(false);
   const pdfRef = useRef(null);
   //console.log(data);
+  // Fetch camera by URL id and resolve project name
+  useEffect(() => {
+    const fetchCamera = async () => {
+      try {
+        if (!API_URL) {
+          console.warn('VITE_API_URL is not set; falling back to relative fetch which may fail without a dev proxy.');
+        }
+        const id = params?.id;
+        if (!id) {
+          setProjectName("");
+          setCameraLoading(false);
+          return;
+        }
+        const res = await fetch(`${API_URL}/camera`);
+        const json = await res.json();
+        const cameras = Array.isArray(json?.cameras) ? json.cameras : (Array.isArray(json) ? json : []);
+        const found = cameras.find((cam) => cam?._id === id);
+        const resolvedName = found?.location || found?.projectName || found?.project || found?.name || found?.location || "";
+        setProjectName(resolvedName || "");
+      } catch (err) {
+        console.error("Error fetching camera:", err);
+        setProjectName("");
+      } finally {
+        setCameraLoading(false);
+      }
+    };
+    fetchCamera();
+  }, []);
   // import data from api schedule here
   useEffect(()=>{
      const fetchSchedule=async()=>{
         try{
           if (!API_URL) {
             console.warn('VITE_API_URL is not set; falling back to relative fetch which may fail without a dev proxy.');
+          }
+          const id = params?.id;
+          if (id && cameraLoading) return;
+          if (id && !projectName) {
+            setData([]);
+            return;
           }
           const res=await fetch(`${API_URL}/schedule`);
           const json=await res.json();
@@ -191,21 +229,23 @@ const API_URL = import.meta.env.VITE_API_URL;  // ✅ Correct way in Vite
               duration = Math.max(1, Math.round((e - s)/msPerDay) + 1);
             }
             return {
-              name: node.name || node.project || 'Untitled',
+              name: node.name || node.project || node.project_name || 'Untitled',
               project: node.project, // keep if present
+              project_name: node.project_name || node.projectName || node.project || node.name,
               start_date: s ? fmt(s) : (node.start_date || ''),
               end_date: e ? fmt(e) : (node.end_date || ''),
               duration: typeof duration === 'number' ? duration : (node.duration ?? null),
               subtasks: normalizedChildren,
             };
           };
+          const normalizeName = (value) => (value || "").toString().trim().toLowerCase();
           const toProjectsArray = (raw) => {
             if (!raw) return [];
             // If API returns { schedules: [...] }
             const arr = Array.isArray(raw) ? raw : (Array.isArray(raw.schedules) ? raw.schedules : (Array.isArray(raw.schedule) ? raw.schedule : []));
             if (Array.isArray(arr) && arr.length) {
               // If looks like already a list of projects (with project property)
-              if (arr.some(x => x && (x.project || x.tasks || x.subtasks))) {
+              if (arr.some(x => x && (x.project || x.tasks || x.subtasks || x.project_name))) {
                 return arr.map(p => {
                   const proj = ensureNode(p);
                   // If no project title, lift from name
@@ -219,7 +259,7 @@ const API_URL = import.meta.env.VITE_API_URL;  // ✅ Correct way in Vite
               }
             }
             // If API returns a single project object
-            if (raw && (raw.project || raw.tasks || raw.subtasks)) {
+            if (raw && (raw.project || raw.tasks || raw.subtasks || raw.project_name)) {
               const proj = ensureNode(raw);
               if (proj) {
                 if (!proj.project) proj.project = proj.name;
@@ -235,6 +275,7 @@ const API_URL = import.meta.env.VITE_API_URL;  // ✅ Correct way in Vite
                 return [{
                   project: 'Project Schedule',
                   name: 'Project Schedule',
+                  project_name: 'Project Schedule',
                   start_date: minD ? fmt(minD) : '',
                   end_date: maxD ? fmt(maxD) : '',
                   // Inclusive calculation: end - start + 1 day
@@ -249,8 +290,11 @@ const API_URL = import.meta.env.VITE_API_URL;  // ✅ Correct way in Vite
 
           const schedules = json?.schedules ?? json?.schedule ?? json?.data ?? json;
           const normalized = toProjectsArray(schedules);
-          if (normalized && normalized.length) {
-            setData(normalized);
+          const filtered = projectName
+            ? normalized.filter((proj) => normalizeName(proj.project_name || proj.project || proj.name) === normalizeName(projectName))
+            : normalized;
+          if (filtered && filtered.length) {
+            setData(filtered);
           } else {
             console.warn('Schedules payload empty or unrecognized.');
             setData([]);
@@ -262,7 +306,7 @@ const API_URL = import.meta.env.VITE_API_URL;  // ✅ Correct way in Vite
         }
       }
       fetchSchedule();
-  },[]);
+  },[params?.id, projectName, cameraLoading]);
   // 🎨 CUSTOMIZABLE COLOR PALETTE - Match reference image
   // Customize these colors for each level of your schedule hierarchy
   const levelColors = {
@@ -1726,6 +1770,5 @@ const API_URL = import.meta.env.VITE_API_URL;  // ✅ Correct way in Vite
     </div>
   );
 };
-
 
 export default DetailedSchedule;
