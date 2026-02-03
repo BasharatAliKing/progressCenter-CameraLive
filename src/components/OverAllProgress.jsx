@@ -171,7 +171,7 @@ const handleExportAQI = async () => {
   setExportError('')
   setExportLoading(true)
   try {
-    const res = await fetch('/aqi', {
+    const res = await fetch(`${API_URL}/aqi`, {
       cache: 'no-store',
       headers: { Accept: 'application/json' },
     })
@@ -400,56 +400,73 @@ const handleExportAQI = async () => {
 
           {/* AQI & Gases */}
      <div className="space-y-4">
-  {latestdataAqi && (
-    <>
-      {[
-        { name: "PM2.5", value: latestdataAqi.pm2_5, unit: "µg/m³" },
-        { name: "PM10", value: latestdataAqi.pm10, unit: "µg/m³" },
-        { name: "CO", value: latestdataAqi.co, unit: "ppb" },
-        { name: "CO2", value: latestdataAqi.co2, unit: "ppm" },
-        { name: "NO2", value: latestdataAqi.no2, unit: "ppb" },
-        { name: "SO2", value: latestdataAqi.so2, unit: "ppb" },
-        { name: "O3", value: latestdataAqi.o3, unit: "ppb" },
-        { name: "Humidity", value: latestdataAqi.hum, unit: "%" },
-        { name: "Temperature", value: latestdataAqi.temp, unit: "°C" },
-      ].map((gas, idx) => {
-        // 🌈 Determine color based on AQI-like value
-        const getAqiColor = (value) => {
-          if (value <= 50) return "bg-[#248606]";
-          if (value <= 100) return "bg-[#44e508]";
-          if (value <= 150) return "bg-[#E9CF3C]";
-          if (value <= 200) return "bg-[#c98800]";
-          if (value <= 300) return "bg-[#ea0a08]";
-          if (value <= 400) return "bg-[#9008dc]";
-          return "bg-[#910003]"; // for 300+
-        };
+  {(() => {
+    // Use actual data if available, otherwise use dummy data
+    const displayData = latestdataAqi || {
+      pm2_5: 45,
+      pm10: 65,
+      co: 0.8,
+      co2: 420,
+      no2: 25,
+      so2: 8,
+      o3: 35,
+      hum: 55,
+      temp: 22,
+    };
 
-        // 🧮 Progress bar width (normalized)
-        const progress = Math.min((gas.value / 500) * 100, 100);
-        const color = getAqiColor(gas.value);
+    const gasArray = [
+      { name: "PM2.5", value: displayData.pm2_5, unit: "µg/m³" },
+      { name: "PM10", value: displayData.pm10, unit: "µg/m³" },
+      { name: "CO", value: displayData.co, unit: "ppb" },
+      { name: "CO2", value: displayData.co2, unit: "ppm" },
+      { name: "NO2", value: displayData.no2, unit: "ppb" },
+      { name: "SO2", value: displayData.so2, unit: "ppb" },
+      { name: "O3", value: displayData.o3, unit: "ppb" },
+      { name: "Humidity", value: displayData.hum, unit: "%" },
+      { name: "Temperature", value: displayData.temp, unit: "°C" },
+    ];
 
-        return (
-          <div key={idx}>
-            <div className="flex justify-between mb-1">
-              <p className="text-sm font-medium text-gray-700">{gas.name}</p>
-              <p className="text-sm font-semibold text-gray-800">
-                {gas.value}
-                <span className="text-gray-600"> {gas.unit}</span>
-              </p>
+    return (
+      <>
+        {gasArray.map((gas, idx) => {
+          // 🌈 Determine color based on AQI-like value
+          const getAqiColor = (value) => {
+            if (value <= 50) return "bg-[#248606]";
+            if (value <= 100) return "bg-[#44e508]";
+            if (value <= 150) return "bg-[#E9CF3C]";
+            if (value <= 200) return "bg-[#c98800]";
+            if (value <= 300) return "bg-[#ea0a08]";
+            if (value <= 400) return "bg-[#9008dc]";
+            return "bg-[#910003]"; // for 300+
+          };
+
+          // 🧮 Progress bar width (normalized)
+          const progress = Math.min((gas.value / 500) * 100, 100);
+          const color = getAqiColor(gas.value);
+
+          return (
+            <div key={idx}>
+              <div className="flex justify-between mb-1">
+                <p className="text-sm font-medium text-gray-700">{gas.name}</p>
+                <p className="text-sm font-semibold text-gray-800">
+                  {gas.value}
+                  <span className="text-gray-600"> {gas.unit}</span>
+                </p>
+              </div>
+              
+              {/* ✅ Colored progress bar */}
+              <div className="w-full h-2 bg-gray-300 rounded-full overflow-hidden">
+                <div
+                  className={`h-2 rounded-full ${color}`}
+                  style={{ width: `${progress}%` }}
+                ></div>
+              </div>
             </div>
-            
-            {/* ✅ Colored progress bar */}
-            <div className="w-full h-2 bg-gray-300 rounded-full overflow-hidden">
-              <div
-                className={`h-2 rounded-full ${color}`}
-                style={{ width: `${progress}%` }}
-              ></div>
-            </div>
-          </div>
-        );
-      })}
-    </>
-  )}
+          );
+        })}
+      </>
+    );
+  })()}
 </div>
           {/* AQI Trend */}
           <div className="mt-6">
