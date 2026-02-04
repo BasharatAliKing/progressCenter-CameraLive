@@ -13,6 +13,7 @@ const PluginDashboard = () => {
   const [error, setError] = useState(null);
   const [isCreateOpen, setIsCreateOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [editingGrid, setEditingGrid] = useState(null);
   const [formData, setFormData] = useState({
     name: '',
     layout: '1',
@@ -90,6 +91,14 @@ const PluginDashboard = () => {
 
   const handleCloseCreate = () => {
     setIsCreateOpen(false);
+    setEditingGrid(null);
+    setFormData({
+      name: '',
+      layout: '1',
+      showDateTime: false,
+      showProjectName: false,
+      showCameraName: false,
+    });
   };
 
   const handleFormChange = (field, value) => {
@@ -107,17 +116,24 @@ const PluginDashboard = () => {
         showDateTime: formData.showDateTime,
         showProjectName: formData.showProjectName,
         showCameraName: formData.showCameraName,
-        createdBy:
+      };
+
+      // Add createdBy and creatorId only if creating (not editing)
+      if (!editingGrid) {
+        payload.createdBy =
           user?.name ||
           user?.fullName ||
           user?.username ||
           user?.email ||
-          'Unknown',
-        creatorId: user?.id || user?._id || user?.userId || user?.uid || 'unknown',
-      };
+          'Unknown';
+        payload.creatorId = user?.id || user?._id || user?.userId || user?.uid || 'unknown';
+      }
 
-      const response = await fetch(`${API_URL}/gridwall`, {
-        method: 'POST',
+      const url = editingGrid ? `${API_URL}/gridwall/${editingGrid.id}` : `${API_URL}/gridwall`;
+      const method = editingGrid ? 'PUT' : 'POST';
+
+      const response = await fetch(url, {
+        method,
         headers: {
           'Content-Type': 'application/json',
           ...authHeader(),
@@ -126,7 +142,7 @@ const PluginDashboard = () => {
       });
 
       if (!response.ok) {
-        throw new Error('Failed to create grid');
+        throw new Error(`Failed to ${editingGrid ? 'update' : 'create'} grid`);
       }
 
       await response.json();
@@ -137,10 +153,11 @@ const PluginDashboard = () => {
         showProjectName: false,
         showCameraName: false,
       });
+      setEditingGrid(null);
       setIsCreateOpen(false);
       fetchGridData();
     } catch (err) {
-      console.error('Error creating grid:', err);
+      console.error('Error submitting grid:', err);
       setError(err.message);
     } finally {
       setIsSubmitting(false);
@@ -153,8 +170,15 @@ const PluginDashboard = () => {
   };
 
   const handleEdit = (grid) => {
-    console.log('Edit grid:', grid);
-    // TODO: Open edit sidebar with grid data
+    setEditingGrid(grid);
+    setFormData({
+      name: grid.title,
+      layout: grid.layout,
+      showDateTime: grid.showDateTime,
+      showProjectName: grid.showProjectName,
+      showCameraName: grid.showCameraName,
+    });
+    setIsCreateOpen(true);
   };
 
   const handleDelete = async (grid) => {
@@ -208,7 +232,7 @@ const PluginDashboard = () => {
           </button>
        </div>
         {/* Grid Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8 p-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5 p-8">
           {loading ? (
             <div className="col-span-full flex justify-center items-center py-12">
               <div className="text-gray-600">Loading grid data...</div>
@@ -249,6 +273,7 @@ const PluginDashboard = () => {
           onFormChange={handleFormChange}
           onSubmit={handleCreateGrid}
           isSubmitting={isSubmitting}
+          isEditMode={!!editingGrid}
         />
       </div>
   );
