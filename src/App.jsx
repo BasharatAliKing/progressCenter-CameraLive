@@ -16,6 +16,8 @@ import UsersPage from './pages/UsersPage'
 import RequireAuth from './components/auth/RequireAuth'
 import GuestOnly from './components/auth/GuestOnly'
 import AuthExpiryWatcher from './components/auth/AuthExpiryWatcher'
+import Plugins from './pages/PluginPages/Plugins'
+import PluginDashboard from './pages/PluginPages/PluginDashboard'
 const App = () => {
   return (
      <Router className='font-dancing'>
@@ -34,8 +36,10 @@ const App = () => {
           <Route path='live-view/:id' element={<LiveView/>} />
           <Route path='/users' element={<UsersPage/>} />
           <Route path='ai-peopleflow' element={<AiPeopleFlow/>} />
-        </Route>
-      </Routes>
+          <Route path="plugins" element={<Plugins/>}/>
+          <Route path="plugins/:id/:pluginname" element={<PluginDashboard/>}/>
+          </Route>
+       </Routes>
      </Router>
   )
 }
