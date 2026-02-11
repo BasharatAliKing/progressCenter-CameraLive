@@ -18,6 +18,7 @@ import GuestOnly from './components/auth/GuestOnly'
 import AuthExpiryWatcher from './components/auth/AuthExpiryWatcher'
 import Plugins from './pages/PluginPages/Plugins'
 import PluginDashboard from './pages/PluginPages/PluginDashboard'
+import GridWallsites from './pages/PluginPages/GridWallsites'
 const App = () => {
   return (
      <Router className='font-dancing'>
@@ -29,7 +30,7 @@ const App = () => {
           <Route path='/dashboard' element={<Home/>} />
           <Route path='map' element={<MapView/>} />
           <Route path='project-view' element={<ProjectView/>} />
-          <Route path='project/:id' element={<Camera/>} />
+          <Route path='project/:id' element={<Camera/>} /> 
           <Route path='/camera/:id' element={<TimeLapse/>} />
           <Route path='/camera/:id/timelapse' element={<CreateTimelapse/>} />
           <Route path='/timelapse/:cameraId/video/:videoId' element={<TimeLapseView/>} />
@@ -38,6 +39,7 @@ const App = () => {
           <Route path='ai-peopleflow' element={<AiPeopleFlow/>} />
           <Route path="plugins" element={<Plugins/>}/>
           <Route path="plugins/:id/:pluginname" element={<PluginDashboard/>}/>
+          <Route path="plugins/:id/:pluginname/:gridId" element={<GridWallsites/>}/>
           </Route>
        </Routes>
      </Router>

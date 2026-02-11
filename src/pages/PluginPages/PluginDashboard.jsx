@@ -5,8 +5,16 @@ import CreateGridWallSidebar from '../../components/pluginPage/CreateGridWallSid
 import { authHeader, getUserData } from '../../utilities/auth';
 const API_URL = import.meta.env.VITE_API_URL;
 const VITE_IMAGE_PATH = import.meta.env.VITE_IMAGE_PATH;
+const formatTitle = (value, fallback = 'GridWall') => {
+  if (!value) return fallback;
+  return value
+    .replace(/[-_]/g, ' ')
+    .replace(/\b\w/g, (char) => char.toUpperCase());
+};
+
 const PluginDashboard = () => {
-  const { pluginName } = useParams();
+  const { id, pluginname } = useParams();
+  const pluginTitle = formatTitle(pluginname);
   const navigate = useNavigate();
   const [gridData, setGridData] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -165,8 +173,9 @@ const PluginDashboard = () => {
   };
 
   const handleGridClick = (grid) => {
-    console.log('Grid clicked:', grid);
-    // Navigate to grid details
+    navigate(`/plugins/${id}/${pluginname}/${grid.id}`, {
+      state: { title: grid.title, pluginTitle },
+    });
   };
 
   const handleEdit = (grid) => {
@@ -219,8 +228,8 @@ const PluginDashboard = () => {
             Plugins
           </Link>
           {" "}/{" "}
-          <span className="font-medium text-[#101828]">{pluginName || 'GridWall'}</span>
-          <h1 className="text-3xl font-bold text-gray-900">{pluginName || 'GridWall'}</h1>
+          <span className="font-medium text-[#101828]">{pluginTitle}</span>
+          <h1 className="text-3xl font-bold text-gray-900">{pluginTitle}</h1>
         </div>
         {/* Page Header */}
           <button
@@ -228,7 +237,7 @@ const PluginDashboard = () => {
             className="bg-primary my-auto cursor-pointer text-white text-sm font-semibold py-2 px-6 rounded-lg transition flex items-center gap-2"
           >
             <span className="text-xl mt-[-3px]">+</span>
-            Create {pluginName || 'GridWall'}
+            Create {pluginTitle}
           </button>
        </div>
         {/* Grid Cards */}
