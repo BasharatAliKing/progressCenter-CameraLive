@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import { authHeader } from "../utilities/auth";
+import { CgClose } from "react-icons/cg";
 
 const API_URL = import.meta.env.VITE_API_URL;
 const IMAGE_PATH = import.meta.env.VITE_IMAGE_PATH;
@@ -13,6 +14,7 @@ const GridWallViewer = () => {
   const [isActive, setIsActive] = useState(true);
   const [cameraMap, setCameraMap] = useState({});
   const [snapshotMap, setSnapshotMap] = useState({});
+  const [selectedItem, setSelectedItem] = useState(null);
 
   const fetchGrid = async () => {
     try {
@@ -256,31 +258,8 @@ const GridWallViewer = () => {
   }, [gridInfo]);
 
   return (
-    <div className="bg-[url('/Sunrise.jpg')] bg-no-repeat bg-center bg-cover min-h-screen">
-      <div className="flex items-center justify-between px-6 py-4 bg-[#121212e2] shadow-sm">
-        <div>
-          <div className="text-sm text-white mb-1">
-            <Link
-              className="hover:text-gray-100 duration-500 hover:scale-105"
-              to="/dashboard"
-            >
-              Dashboard
-            </Link>
-            {" / "}
-            <span className="font-medium text-white">
-              {gridInfo?.name || "GridWall Viewer"}
-            </span>
-          </div>
-          <h2 className="text-xl font-semibold text-white">
-            {gridInfo?.name || "GridWall Viewer"}
-          </h2>
-        </div>
-        <div className="text-sm text-white/80">
-          Status: {isActive ? "Active" : "Inactive"}
-        </div>
-      </div>
-
-      <div className="p-6">
+    <div className="bg-[url('/Sunrise.jpg')] bg-no-repeat bg-center bg-cover h-screen overflow-hidden flex flex-col">
+     <div className="pb-10 flex-1 overflow-hidden">
         {loading ? (
           <div className="flex justify-center items-center py-12 text-white">
             Loading grid data...
@@ -299,7 +278,7 @@ const GridWallViewer = () => {
           </div>
         ) : (
           <div
-            className="grid gap-0 border border-black"
+            className="grid gap-0 border border-black h-full"
             style={{
               gridTemplateRows: `repeat(${gridDimensions.rows}, minmax(0, 1fr))`,
               gridTemplateColumns: `repeat(${gridDimensions.cols}, minmax(0, 1fr))`,
@@ -308,7 +287,12 @@ const GridWallViewer = () => {
             {items.map((item) => (
               <div
                 key={item.id}
-                className="relative min-h-[180px] bg-[#2b2f36] border border-black overflow-hidden"
+                className={`relative bg-[#2b2f36] border border-black overflow-hidden ${
+                  item.image ? "cursor-pointer" : ""
+                }`}
+                onClick={() => {
+                  if (item.image) setSelectedItem(item);
+                }}
               >
                 {item.image ? (
                   <img
@@ -342,6 +326,77 @@ const GridWallViewer = () => {
           </div>
         )}
       </div>
+
+      <footer className="fixed bottom-0 left-0 right-0 z-40 bg-black/95 text-white border-t border-white/10">
+        <div className="flex items-center justify-between px-4 py-3">
+          <div className="flex items-center gap-3">
+            <img
+              src="/nespak-logo.png"
+              alt="Nespak"
+              className="h-8 w-auto"
+            />
+          </div>
+          <div className="flex items-center gap-4 text-sm">
+            <Link to="/dashboard" className="underline hover:text-white/80">
+              Go to Dashboard
+            </Link>
+            <div className="flex items-center gap-2">
+              <svg
+                width="18"
+                height="18"
+                viewBox="0 0 18 18"
+                fill="none"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <rect x="1" y="1" width="7" height="7" fill="currentColor" />
+                <rect x="10" y="1" width="7" height="7" fill="currentColor" />
+                <rect x="1" y="10" width="7" height="7" fill="currentColor" />
+                <rect x="10" y="10" width="7" height="7" fill="currentColor" />
+              </svg>
+              <span className="font-semibold">GridWall</span>
+              <span className="text-[10px] text-white/70">Powered by NESPAK</span>
+            </div>
+          </div>
+        </div>
+      </footer>
+
+      {selectedItem && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70">
+          <div className="relative w-[80%] h-[80vh] bg-black rounded-lg overflow-hidden shadow-2xl">
+            <button
+              type="button"
+              onClick={() => setSelectedItem(null)}
+              className="absolute h-9 w-9 cursor-pointer top-3 right-3 z-10 flex items-center justify-center rounded-full bg-white/90 text-sm font-medium text-gray-900 hover:bg-white"
+            >
+              <CgClose size={22}/>
+            </button>
+            <img
+              src={selectedItem.image}
+              alt="Grid wall"
+              className="w-full h-full object-cover"
+            />
+            {(selectedItem.project || selectedItem.camera || selectedItem.time) && (
+              <div className="absolute bottom-0 left-0 right-0 bg-black/75 text-white text-xs px-3 py-2 flex items-center gap-2">
+                {selectedItem.project && (
+                  <span className="font-medium truncate">
+                    {selectedItem.project}
+                  </span>
+                )}
+                {selectedItem.project && selectedItem.camera && (
+                  <span className="opacity-70">|</span>
+                )}
+                {selectedItem.camera && (
+                  <span className="truncate">{selectedItem.camera}</span>
+                )}
+                {selectedItem.time && <span className="opacity-70">|</span>}
+                {selectedItem.time && (
+                  <span className="truncate">{selectedItem.time}</span>
+                )}
+              </div>
+            )}
+          </div>
+        </div>
+      )}
     </div>
   );
 };
