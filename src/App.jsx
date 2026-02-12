@@ -19,11 +19,13 @@ import AuthExpiryWatcher from './components/auth/AuthExpiryWatcher'
 import Plugins from './pages/PluginPages/Plugins'
 import PluginDashboard from './pages/PluginPages/PluginDashboard'
 import GridWallsites from './pages/PluginPages/GridWallsites'
+import GridWallViewer from './pages/GridWallViewer'
 const App = () => {
   return (
      <Router className='font-dancing'>
       <AuthExpiryWatcher />
       <Routes>
+          <Route path="gridwall-viewer/:id" element={<GridWallViewer/>} />
         <Route path='/login' element={<GuestOnly><Login/></GuestOnly>} />
         <Route path='/' element={<RequireAuth><MainOutlet/></RequireAuth>} >
           <Route path='' element={<Home/>} />

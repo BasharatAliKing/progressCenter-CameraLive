@@ -18,6 +18,8 @@ const GridWallsites = () => {
   const { id, pluginname, gridId } = useParams();
   const location = useLocation();
   const [isActive, setIsActive] = useState(true);
+  const [isStatusUpdating, setIsStatusUpdating] = useState(false);
+  const [copied, setCopied] = useState(false);
   const [gridInfo, setGridInfo] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -70,7 +72,6 @@ const GridWallsites = () => {
       setLoading(false);
     }
   };
-
   useEffect(() => {
     fetchGrid();
   }, [gridId]);
@@ -467,6 +468,74 @@ const GridWallsites = () => {
     }
   };
 
+  const handleToggleStatus = async () => {
+    if (!gridInfo?._id || isStatusUpdating) return;
+
+    const nextStatus = isActive ? "inactive" : "active";
+    setIsStatusUpdating(true);
+    setIsActive(!isActive);
+    setGridInfo((prev) =>
+      prev ? { ...prev, status: nextStatus } : prev
+    );
+
+    try {
+      const payload = {
+        name: gridInfo.name,
+        layout: gridInfo.layout,
+        showDateTime: gridInfo.showDateTime,
+        showProjectName: gridInfo.showProjectName,
+        showCameraName: gridInfo.showCameraName,
+        cameraIds: Array.isArray(gridInfo.cameraIds) ? gridInfo.cameraIds : [],
+        status: nextStatus,
+      };
+
+      const response = await fetch(`${API_URL}/gridwall/${gridInfo._id}`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          ...authHeader(),
+        },
+        body: JSON.stringify(payload),
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to update grid status");
+      }
+
+      await response.json();
+      fetchGrid();
+    } catch (err) {
+      console.error("Error updating grid status:", err);
+      setError(err.message);
+      setIsActive((prev) => !prev);
+      setGridInfo((prev) =>
+        prev
+          ? {
+              ...prev,
+              status: isActive ? "active" : "inactive",
+            }
+          : prev
+      );
+    } finally {
+      setIsStatusUpdating(false);
+    }
+  };
+
+  const viewerLink = gridInfo?._id
+    ? `${window.location.origin}/gridwall-viewer/${gridInfo._id}`
+    : "";
+
+  const handleCopyViewerLink = async () => {
+    if (!viewerLink) return;
+    try {
+      await navigator.clipboard.writeText(viewerLink);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 1500);
+    } catch (err) {
+      console.error("Failed to copy link:", err);
+    }
+  };
+
   return (
     <div className="bg-[url('/Sunrise.jpg')] bg-no-repeat bg-center bg-cover min-h-[calc(100vh-56px)]">
       <div className="bg-[#ffffffc9] px-8 py-5 pt-6 border-b border-black/10">
@@ -534,19 +603,43 @@ const GridWallsites = () => {
                 <span className="text-sm font-medium text-gray-700">
                   Active
                 </span>
-                <button
-                  type="button"
-                  onClick={() => setIsActive((prev) => !prev)}
-                  className={`relative inline-flex h-6 w-11 items-center rounded-full transition ${
-                    isActive ? "bg-green-500" : "bg-gray-300"
-                  }`}
-                >
-                  <span
-                    className={`inline-block h-4 w-4 transform rounded-full bg-white transition ${
-                      isActive ? "translate-x-6" : "translate-x-1"
+                <div className="relative group">
+                  <button
+                    type="button"
+                    onClick={handleToggleStatus}
+                    disabled={isStatusUpdating}
+                    className={`relative inline-flex h-6 w-11 items-center rounded-full transition ${
+                      isActive ? "bg-green-500" : "bg-gray-300"
                     }`}
-                  />
-                </button>
+                  >
+                    <span
+                      className={`inline-block h-4 w-4 transform rounded-full bg-white transition ${
+                        isActive ? "translate-x-6" : "translate-x-1"
+                      }`}
+                    />
+                  </button>
+
+                  <div className="pointer-events-none absolute right-0 top-8 z-20 w-64 rounded-lg border border-black/10 bg-white shadow-lg opacity-0 transition-opacity group-hover:opacity-100">
+                    <div className="p-3 text-xs text-gray-600">
+                      Viewer link
+                      <div className="mt-2 flex items-center gap-2">
+                        <input
+                          type="text"
+                          readOnly
+                          value={viewerLink}
+                          className="pointer-events-auto w-full rounded-md border border-black/10 px-2 py-1 text-[11px] text-gray-700"
+                        />
+                        <button
+                          type="button"
+                          onClick={handleCopyViewerLink}
+                          className="pointer-events-auto rounded-md bg-gray-900 px-2 py-1 text-[11px] text-white"
+                        >
+                          {copied ? "Copied" : "Copy"}
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
               </div>
             </div>
           </div>

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import GridCard from '../../components/pluginPage/GridCard';
 import CreateGridWallSidebar from '../../components/pluginPage/CreateGridWallSidebar';
@@ -17,6 +17,8 @@ const PluginDashboard = () => {
   const pluginTitle = formatTitle(pluginname);
   const navigate = useNavigate();
   const [gridData, setGridData] = useState([]);
+  const [cameraMap, setCameraMap] = useState({});
+  const [snapshotMap, setSnapshotMap] = useState({});
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [isCreateOpen, setIsCreateOpen] = useState(false);
@@ -32,7 +34,42 @@ const PluginDashboard = () => {
 
   useEffect(() => {
     fetchGridData();
+    fetchCameras();
   }, []);
+
+  const fetchCameras = async () => {
+    try {
+      const response = await fetch(`${API_URL}/camera`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+          ...authHeader(),
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to fetch cameras');
+      }
+
+      const result = await response.json();
+      const rawCameras =
+        result?.cameras ||
+        result?.data ||
+        (Array.isArray(result) ? result : []);
+
+      const map = rawCameras.reduce((acc, camera) => {
+        const cameraId = camera._id || camera.id;
+        if (cameraId) {
+          acc[cameraId] = camera;
+        }
+        return acc;
+      }, {});
+
+      setCameraMap(map);
+    } catch (err) {
+      console.error('Error fetching cameras:', err);
+    }
+  };
 
   const fetchGridData = async () => {
     try {
@@ -53,20 +90,14 @@ const PluginDashboard = () => {
       const result = await response.json();
       
       if (result.success && result.data) {
-        // Transform API data to match GridCard component props
-        const getImageSlots = (layout) => {
-          const layoutNum = Number(layout);
-          if (layoutNum === 1) return 2;
-          if (layoutNum === 2) return 4;
-          if (layoutNum === 3) return 9;
-          if (layoutNum === 4) return 16;
-          return 4;
-        };
-
         const transformedData = result.data.map((item) => ({
           id: item._id,
           title: item.name,
-          images: Array(getImageSlots(item.layout)).fill(''),
+          cameraIds: Array.isArray(item.cameraIds)
+            ? item.cameraIds
+            : Array.isArray(item.cameras)
+            ? item.cameras
+            : [],
           status: item.status === 'active' ? 'Published' : 'Draft',
           createdOn: new Date(item.createdAt).toLocaleString('en-US', {
             hour: 'numeric',
@@ -92,6 +123,105 @@ const PluginDashboard = () => {
       setLoading(false);
     }
   };
+
+  useEffect(() => {
+    const cameraIds = gridData
+      .flatMap((grid) => (Array.isArray(grid.cameraIds) ? grid.cameraIds : []))
+      .filter(Boolean);
+    const uniqueIds = Array.from(new Set(cameraIds));
+
+    if (uniqueIds.length === 0) {
+      setSnapshotMap({});
+      return;
+    }
+
+    let isMounted = true;
+
+    const fetchLatestSnapshots = async () => {
+      try {
+        const results = await Promise.all(
+          uniqueIds.map(async (cameraId) => {
+            try {
+              const response = await fetch(
+                `${API_URL}/snapshots/latest/${cameraId}`,
+                {
+                  method: 'GET',
+                  headers: {
+                    'Content-Type': 'application/json',
+                    ...authHeader(),
+                  },
+                }
+              );
+              if (!response.ok) return null;
+              const data = await response.json();
+              return data?.image ? { cameraId, image: data.image } : null;
+            } catch (error) {
+              console.error(
+                `Error fetching latest snapshot for camera ${cameraId}:`,
+                error
+              );
+              return null;
+            }
+          })
+        );
+
+        if (!isMounted) return;
+
+        const map = results.reduce((acc, item) => {
+          if (item?.cameraId && item?.image) {
+            acc[item.cameraId] = item.image;
+          }
+          return acc;
+        }, {});
+
+        setSnapshotMap(map);
+      } catch (error) {
+        console.error('Error fetching latest snapshots:', error);
+      }
+    };
+
+    fetchLatestSnapshots();
+
+    return () => {
+      isMounted = false;
+    };
+  }, [gridData]);
+
+  const getImageSlots = (layout) => {
+    const layoutNum = Number(layout);
+    if (layoutNum === 1) return 2;
+    if (layoutNum === 2) return 4;
+    if (layoutNum === 3) return 9;
+    if (layoutNum === 4) return 16;
+    return 4;
+  };
+
+  const getImageUrl = (cameraId) => {
+    if (!cameraId) return null;
+    const snapshot = snapshotMap[cameraId];
+    const snapshotUrl = snapshot?.url || snapshot?.image || snapshot;
+    const cameraImage = cameraMap[cameraId]?.image;
+
+    if (snapshotUrl) return `${VITE_IMAGE_PATH || ''}${snapshotUrl}`;
+    if (cameraImage) return `${VITE_IMAGE_PATH || ''}${cameraImage}`;
+    return '/card-1.jpg';
+  };
+
+  const gridDataWithImages = useMemo(() => {
+    return gridData.map((grid) => {
+      const slotCount = getImageSlots(grid.layout);
+      const cameraIds = Array.isArray(grid.cameraIds) ? grid.cameraIds : [];
+      const images = cameraIds
+        .slice(0, slotCount)
+        .map((cameraId) => getImageUrl(cameraId))
+        .filter(Boolean);
+
+      return {
+        ...grid,
+        images,
+      };
+    });
+  }, [gridData, snapshotMap, cameraMap]);
 
   const handleCreateNew = () => {
     setIsCreateOpen(true);
@@ -255,7 +385,7 @@ const PluginDashboard = () => {
               <div className="text-gray-600">No grids found. Create your first grid!</div>
             </div>
           ) : (
-            gridData.map((grid) => (
+            gridDataWithImages.map((grid) => (
               <GridCard
                 key={grid.id}
                 title={grid.title}
