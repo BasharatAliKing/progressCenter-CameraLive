@@ -1,0 +1,87 @@
+import React, { useState, useEffect } from "react";
+
+const ProjectHeader = (props) => {
+  const {
+    employer,
+    contractor,
+    consultant,
+    project,
+    location,
+    reportNo,
+    monthNo,
+    plotNo,
+    weekNo,
+    totalDays,
+  } = props;
+
+  const [currentDate, setCurrentDate] = useState("");
+  const [elapsedDays, setElapsedDays] = useState(0);
+  const [remainingDays, setRemainingDays] = useState(0);
+
+  useEffect(() => {
+    // Set current date using window features
+    const today = new Date();
+    const formattedDate = today.toLocaleDateString("en-GB", {
+      day: "2-digit",
+      month: "short",
+      year: "numeric",
+    });
+    setCurrentDate(formattedDate);
+
+    // Example calculation (replace with logic)
+    const elapsed = 290;
+    setElapsedDays(elapsed);
+    setRemainingDays(totalDays - elapsed);
+  }, [totalDays]);
+
+  return (
+    <div className=" rounded-md py-2 px-4 mb-4 border border-white p-2 w-full">
+      <div className="flex justify-between rounded-md py-2 px-4  space-x-1 bg-blue-300 ">
+        <span className="font-semibold">Employer : {employer}</span>
+        <span className="font-semibold">Contractor : {contractor}</span>
+      </div>
+
+      <div className="flex justify-between rounded-md py-2 px-4 bg-blue-300 ">
+        <span className="font-semibold">
+          Project: {project} On Plot No. {plotNo} At {location}
+        </span>
+        <span className="font-semibold">Consultant : {consultant}</span>
+      </div>
+
+      <div className=" rounded-b-md grid grid-cols-6 text-center mt-1 bg-blue-200">
+        <div className="border p-1">
+          Date
+          <br />
+          <span className="font-medium">{currentDate}</span>
+        </div>
+        <div className="border p-1">
+          Report No.
+          <br />
+          <span className="font-medium">{reportNo}</span>
+        </div>
+        <div className="border p-1">
+          Month No.
+          <br />
+          <span className="font-medium">{monthNo}</span>
+        </div>
+        <div className="border p-1">
+          Week No.
+          <br />
+          <span className="font-medium">{weekNo}</span>
+        </div>
+        <div className="border p-1">
+          Elapsed Days
+          <br />
+          <span className="font-medium">{elapsedDays}</span>
+        </div>
+        <div className="border p-1">
+          Remaining Days
+          <br />
+          <span className="font-medium">{remainingDays}</span>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default ProjectHeader;
