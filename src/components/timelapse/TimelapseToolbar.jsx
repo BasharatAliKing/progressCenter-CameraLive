@@ -79,6 +79,14 @@ export default function TimelapseToolbar({
                   </div>
                   <span className="text-gray-900 font-normal text-sm">LiveLapse</span>
                 </Link>
+                {/* side by side video */}
+                <Link to={`/camera/${id}/side-by-side-video`} className="w-full flex items-center gap-3 p-2 px-3 rounded-lg hover:bg-gray-200 cursor-pointer transition-colors">
+                  <div className="w-7 h-7 rounded-full p-[6px] bg-primary flex items-center justify-center flex-shrink-0">
+                   <Video className="text-white " />
+                  </div>
+                  <span className="text-gray-900 font-normal text-sm">Side by Side Video</span>
+                </Link>
+
 
                 {/* Progress Slider */}
                 <button className="w-full flex items-center gap-3 p-2 px-3 rounded-lg hover:bg-gray-200 cursor-pointer transition-colors">

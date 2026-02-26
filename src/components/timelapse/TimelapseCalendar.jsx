@@ -39,7 +39,7 @@ export default function TimelapseCalendar({
     );
   };
   return (
-    <div className="absolute  mt-2 left-0 bg-white rounded-2xl shadow-2xl border border-gray-200 p-4 w-80 z-50">
+    <div className="absolute -mt-20 left-0 bg-white rounded-2xl shadow-2xl border border-gray-200 p-4 w-80 z-50">
       {/* Calendar Header */}
       <div className="flex items-center justify-between mb-4">
         <button onClick={() => onMonthChange(-1)} className="p-1 hover:bg-gray-100 rounded">

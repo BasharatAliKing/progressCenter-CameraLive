@@ -6,7 +6,9 @@ export default function TimelapseHeader({
   cameras, 
   params, 
   onSnapshot, 
-  onReload 
+  onReload,
+  modeLabel = "TimeLapse",
+  snapshotLabel = "Download image"
 }) {
   return (
     <div className="flex items-center text-black bg-white/10 backdrop-blur-sm border-b border-white/20 justify-between px-6 py-4 shadow-sm">
@@ -16,7 +18,7 @@ export default function TimelapseHeader({
         <div className="text-sm mb-1 text-[#667085]">
           <Link className="text-[#667085] duration-500 hover:scale-105" to='/dashboard'>Dashboard</Link> /
           <Link to={`/project/${params.id}`} className="text-[#667085]">{" "}{cameras.location}</Link> /
-          <span className="font-medium text-[#101828]">{" "}{cameras.name} - TimeLapse</span>
+          <span className="font-medium text-[#101828]">{" "}{cameras.name} - {modeLabel}</span>
         </div>
         {/* Title */}
         <h2 className="text-xl text-[#101828] font-bold">
@@ -38,7 +40,7 @@ export default function TimelapseHeader({
           className="flex items-center text-sm font-medium cursor-pointer duration-500 hover:scale-105 gap-2 px-4 py-2 rounded-xl bg-white text-gray-800 shadow hover:bg-gray-50 border border-gray-200 transition"
         >
           <Download size={18} />
-          Download image
+          {snapshotLabel}
         </button>
 
         {/* Reload */}

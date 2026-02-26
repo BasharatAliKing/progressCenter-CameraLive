@@ -20,6 +20,7 @@ import Plugins from './pages/PluginPages/Plugins'
 import PluginDashboard from './pages/PluginPages/PluginDashboard'
 import GridWallsites from './pages/PluginPages/GridWallsites'
 import GridWallViewer from './pages/GridWallViewer'
+import SideBySideVideo from './pages/SideBySideVideo'
 const App = () => {
   return (
      <Router className='font-dancing'>
@@ -35,6 +36,7 @@ const App = () => {
           <Route path='project/:id' element={<Camera/>} /> 
           <Route path='/camera/:id' element={<TimeLapse/>} />
           <Route path='/camera/:id/timelapse' element={<CreateTimelapse/>} />
+          <Route path='/camera/:id/side-by-side-video' element={<SideBySideVideo/>} />
           <Route path='/timelapse/:cameraId/video/:videoId' element={<TimeLapseView/>} />
           <Route path='live-view/:id' element={<LiveView/>} />
           <Route path='/users' element={<UsersPage/>} />
