@@ -7,6 +7,11 @@ import TimelapseHeader from "../components/timelapse/TimelapseHeader";
 const BASE_URL = "https://api.nespakprogresscenter.com";
 const API_URL = import.meta.env.VITE_API_URL || BASE_URL;
 
+const normalizeText = (value) =>
+  String(value || "")
+    .trim()
+    .toLowerCase();
+
 const parseDdMmmYyyy = (value) => {
   if (typeof value !== "string") return null;
   const match = value.match(/^(\d{1,2})-([A-Za-z]{3})-(\d{4})$/);
@@ -62,8 +67,14 @@ const normalizeDate = (dateInput) => {
   return new Date(date.getFullYear(), date.getMonth(), date.getDate());
 };
 
-const collectDatesFromPayload = (payload) => {
+const collectDatesFromPayload = (payload, projectLocation) => {
   const rawDates = [];
+  const targetLocation = normalizeText(projectLocation);
+
+  const shouldIncludeEntry = (entry) => {
+    if (!targetLocation) return true;
+    return normalizeText(entry?.project_name) === targetLocation;
+  };
 
   if (Array.isArray(payload?.dates)) {
     rawDates.push(
@@ -79,7 +90,9 @@ const collectDatesFromPayload = (payload) => {
     rawDates.push(
       ...payload.videos.map(
         (entry) =>
-          entry?.video_date || entry?.date || entry?.createdAt || entry?.videoDate
+          shouldIncludeEntry(entry)
+            ? entry?.video_date || entry?.date || entry?.createdAt || entry?.videoDate
+            : null
       )
     );
   }
@@ -89,7 +102,8 @@ const collectDatesFromPayload = (payload) => {
       ...payload.map((entry) =>
         typeof entry === "string"
           ? entry
-          : entry?.video_date || entry?.date || entry?.createdAt || entry?.videoDate
+          : shouldIncludeEntry(entry) &&
+            (entry?.video_date || entry?.date || entry?.createdAt || entry?.videoDate)
       )
     );
   }
@@ -189,10 +203,8 @@ export default function SideBySideVideo() {
   const params = useParams();
   const [cameras, setCameras] = useState({});
   const [availableDates, setAvailableDates] = useState([]);
-
   const [leftDate, setLeftDate] = useState(null);
   const [rightDate, setRightDate] = useState(null);
-
   const [leftCurrentMonth, setLeftCurrentMonth] = useState(new Date());
   const [rightCurrentMonth, setRightCurrentMonth] = useState(new Date());
 
@@ -207,19 +219,27 @@ export default function SideBySideVideo() {
       setVideo(null);
       return;
     }
-
     const formatted = formatDateForAPI(date);
     if (!formatted) {
       setVideo(null);
       return;
     }
-
     try {
       const res = await fetch(`${BASE_URL}/api/side-by-side-videos/by-date/${formatted}`);
       const data = await res.json();
-
       if (Array.isArray(data?.videos) && data.videos.length > 0) {
-        setVideo(data.videos[0]);
+        const targetLocation = normalizeText(cameras?.location);
+        const filteredVideos = targetLocation
+          ? data.videos.filter(
+              (entry) => normalizeText(entry?.project_name) === targetLocation
+            )
+          : data.videos;
+
+        if (filteredVideos.length > 0) {
+          setVideo(filteredVideos[0]);
+          return;
+        }
+        setVideo(null);
         return;
       }
       setVideo(null);
@@ -227,7 +247,7 @@ export default function SideBySideVideo() {
       console.error("Error fetching side-by-side video:", error);
       setVideo(null);
     }
-  }, []);
+  }, [cameras?.location]);
 
   const fetchAvailableDates = useCallback(async () => {
     try {
@@ -236,15 +256,14 @@ export default function SideBySideVideo() {
         setAvailableDates([]);
         return;
       }
-
       const data = await res.json();
-      const parsedDates = collectDatesFromPayload(data);
+      const parsedDates = collectDatesFromPayload(data, cameras?.location);
       setAvailableDates(parsedDates);
     } catch (error) {
       console.error("Error fetching side-by-side available dates:", error);
       setAvailableDates([]);
     }
-  }, []);
+  }, [cameras?.location]);
 
   useEffect(() => {
     const fetchCameras = async () => {
@@ -257,10 +276,12 @@ export default function SideBySideVideo() {
         console.error("Error fetching cameras:", error);
       }
     };
-
     fetchCameras();
+  }, [params.id]);
+
+  useEffect(() => {
     fetchAvailableDates();
-  }, [fetchAvailableDates, params.id]);
+  }, [fetchAvailableDates]);
 
   useEffect(() => {
     if (!availableDates.length) return;
@@ -273,6 +294,33 @@ export default function SideBySideVideo() {
     }
 
     if (!rightDate) {
+      setRightDate(earliest);
+      setRightCurrentMonth(new Date(earliest.getFullYear(), earliest.getMonth(), 1));
+    }
+  }, [availableDates, leftDate, rightDate]);
+
+  useEffect(() => {
+    if (!availableDates.length) {
+      setLeftVideo(null);
+      setRightVideo(null);
+      return;
+    }
+
+    const isLeftDateValid =
+      leftDate &&
+      availableDates.some((date) => date.toDateString() === leftDate.toDateString());
+    const isRightDateValid =
+      rightDate &&
+      availableDates.some((date) => date.toDateString() === rightDate.toDateString());
+
+    if (!isLeftDateValid) {
+      const latest = availableDates[0];
+      setLeftDate(latest);
+      setLeftCurrentMonth(new Date(latest.getFullYear(), latest.getMonth(), 1));
+    }
+
+    if (!isRightDateValid) {
+      const earliest = availableDates[availableDates.length - 1];
       setRightDate(earliest);
       setRightCurrentMonth(new Date(earliest.getFullYear(), earliest.getMonth(), 1));
     }
