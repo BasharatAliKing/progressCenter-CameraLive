@@ -1,5 +1,5 @@
 import React, { useEffect, useRef } from "react";
-import { File, SlidersVertical, Usb, Video, X } from "lucide-react";
+import { File, LucideMonitor, SlidersVertical, Usb, Video, X } from "lucide-react";
 import { Link, useParams } from "react-router-dom";
 const API_URL = import.meta.env.VITE_API_URL;
 const VITE_IMAGE_PATH = import.meta.env.VITE_IMAGE_PATH;
@@ -85,6 +85,12 @@ export default function TimelapseToolbar({
                    <Video className="text-white " />
                   </div>
                   <span className="text-gray-900 font-normal text-sm">Side by Side Video</span>
+                </Link>
+                <Link title="Coming Soon..." className="w-full flex items-center gap-3 p-2 px-3 rounded-lg hover:bg-gray-200 cursor-pointer transition-colors">
+                  <div className="w-7 h-7 rounded-full p-[6px] bg-primary flex items-center justify-center flex-shrink-0">
+                   <LucideMonitor className="text-white " />
+                  </div>
+                  <span className="text-gray-900 font-normal text-sm">(HSE) Site Monitoring</span>
                 </Link>
 
 

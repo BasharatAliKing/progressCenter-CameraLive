@@ -390,7 +390,7 @@ export default function SideBySideVideo() {
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 p-6 bg-[#1212125b] rounded-2xl min-h-[calc(100vh-130px)] border border-white/20 shadow-2xl">
           <Panel
-            title="Left Video"
+            title="Before"
             selectedDate={leftDate}
             setSelectedDate={setLeftDate}
             currentMonth={leftCurrentMonth}
@@ -401,7 +401,7 @@ export default function SideBySideVideo() {
             video={leftVideo}
           />
           <Panel
-            title="Right Video"
+            title="After"
             selectedDate={rightDate}
             setSelectedDate={setRightDate}
             currentMonth={rightCurrentMonth}
