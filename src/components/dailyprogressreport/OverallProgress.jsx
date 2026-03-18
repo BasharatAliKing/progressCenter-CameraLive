@@ -21,9 +21,9 @@ const ProgressAnalysisTable = ({
     `${value >= 0 ? "+" : ""}${value.toFixed(3)}%`;
 
   return (
-    <div className="w-full max-w-5*1 mx-auto bg-amber-50 shadow-lg rounded-lg overflow-hidden">
+    <div className="w-full max-w-5*1 mx-auto bg-gray-200 shadow-lg rounded-lg overflow-hidden">
       {/* Header */}
-      <div className=" px-6 py-3 border-b border-amber-50">
+      <div className=" px-6 py-3 border-b border-gray-100">
         <h2 className=" text-center font-bold text-black">
           OVERALL PROGRESS ANALYSIS
         </h2>
@@ -33,7 +33,7 @@ const ProgressAnalysisTable = ({
       <table className="w-full border-collapse">
         {/* Top Summary Row */}
         <tbody>
-          <tr className="bg-amber-50">
+          <tr className="bg-gray-100">
             <td className="border border-gray-400 p-3 text-center font-semibold">
               <div className="text-sm mb-1">
                 Overall Schedule Performance % (1)
@@ -60,38 +60,38 @@ const ProgressAnalysisTable = ({
               <div className="text-sm mb-1">(Days) +Ahead / -Delay</div>
               <div className="text-lg font-bold">{daysAheadDelay}</div>
             </td>
-            <td className="border border-gray-400 bg-amber-50"></td>
-            <td className="border border-gray-400 bg-amber-50"></td>
-            <td className="border border-gray-400 bg-amber-50"></td>
-            <td className="border border-gray-400 bg-amber-50"></td>
+            <td className="border border-gray-400 bg-gray-100"></td>
+            <td className="border border-gray-400 bg-gray-100"></td>
+            <td className="border border-gray-400 bg-gray-100"></td>
+            <td className="border border-gray-400 bg-gray-100"></td>
           </tr>
 
           {/* Main Headers Row */}
-          <tr className="bg-amber-50">
+          <tr className="bg-gray-100">
             <td className="border border-gray-400 p-3 text-center font-semibold">
               Program ID
             </td>
             <td
-              className="border border-gray-400 p-3 text-center font-semibold bg-amber-50"
+              className="border border-gray-400 p-3 text-center font-semibold bg-gray-100"
               colSpan="3"
             >
               This Week
             </td>
             <td
-              className="border border-gray-400 p-3 text-center font-semibold bg-amber-50"
+              className="border border-gray-400 p-3 text-center font-semibold bg-gray-100"
               colSpan="3"
             >
               Last Week
             </td>
-            <td className="border border-gray-400 p-3 text-center font-semibold bg-amber-50">
+            <td className="border border-gray-400 p-3 text-center font-semibold bg-gray-100">
               <div>Gain / Loss</div>
               <div className="text-xs">(7) = (3-6)</div>
             </td>
           </tr>
 
           {/* Sub Headers Row */}
-          <tr className="bg-amber-50">
-            <td className="border border-gray-400 bg-amber-50"></td>
+          <tr className="bg-gray-100">
+            <td className="border border-gray-400 bg-gray-100"></td>
             <td className="border border-gray-400 p-2 text-center font-semibold text-sm">
               Planned % (1)
             </td>
@@ -111,7 +111,7 @@ const ProgressAnalysisTable = ({
               <div>Position</div>
               <div>(6) = (5-4)</div>
             </td>
-            <td className="border border-gray-400 bg-amber-50"></td>
+            <td className="border border-gray-400 bg-gray-100"></td>
           </tr>
 
           {/* Data Row */}
@@ -170,7 +170,7 @@ function App() {
   };
 
   return (
-    <div className="p-8 bg-amber-50 rounded-2xl ">
+    <div className="p-8 bg-[#e7e4dc] rounded-2xl ">
       <ProgressAnalysisTable {...exampleData} />
     </div>
   );

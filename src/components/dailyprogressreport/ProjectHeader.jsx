@@ -35,46 +35,46 @@ const ProjectHeader = (props) => {
   }, [totalDays]);
 
   return (
-    <div className=" rounded-md py-2 px-4 mb-4 border border-white p-2 w-full">
-      <div className="flex justify-between rounded-md py-2 px-4  space-x-1 bg-blue-300 ">
+    <div className=" rounded-md py-2 mb-4 border border-white w-full">
+      <div className="flex justify-between rounded-md py-2 px-4  space-x-1 bg-[#e7e4dc] ">
         <span className="font-semibold">Employer : {employer}</span>
         <span className="font-semibold">Contractor : {contractor}</span>
       </div>
 
-      <div className="flex justify-between rounded-md py-2 px-4 bg-blue-300 ">
+      <div className="flex justify-between mt-2 rounded-md py-2 px-4 bg-[#e7e4dc] ">
         <span className="font-semibold">
-          Project: {project} On Plot No. {plotNo} At {location}
+          Project: {project} 
         </span>
         <span className="font-semibold">Consultant : {consultant}</span>
       </div>
 
-      <div className=" rounded-b-md grid grid-cols-6 text-center mt-1 bg-blue-200">
-        <div className="border p-1">
+      <div className="mt-2 rounded-md grid grid-cols-6 text-center bg-[#e7e4dc]">
+        <div className="border rounded-l-md border-gray-400 p-1">
           Date
           <br />
           <span className="font-medium">{currentDate}</span>
         </div>
-        <div className="border p-1">
+        <div className="border border-gray-400 p-1">
           Report No.
           <br />
           <span className="font-medium">{reportNo}</span>
         </div>
-        <div className="border p-1">
+        <div className="border border-gray-400 p-1">
           Month No.
           <br />
           <span className="font-medium">{monthNo}</span>
         </div>
-        <div className="border p-1">
+        <div className="border border-gray-400 p-1">
           Week No.
           <br />
           <span className="font-medium">{weekNo}</span>
         </div>
-        <div className="border p-1">
+        <div className="border border-gray-400 p-1">
           Elapsed Days
           <br />
           <span className="font-medium">{elapsedDays}</span>
         </div>
-        <div className="border p-1">
+        <div className="border rounded-r-md border-gray-400 p-1">
           Remaining Days
           <br />
           <span className="font-medium">{remainingDays}</span>

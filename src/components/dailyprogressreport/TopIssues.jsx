@@ -53,7 +53,7 @@ const TopIssuesTable = ({
   }
 
   return (
-    <div className="w-full bg-amber-50 p-6 rounded-lg shadow-lg">
+    <div className="w-full bg-[#e7e4dc] p-6 rounded-lg shadow-lg">
       <div className="mb-4">
         <h2 className="text-xl font-bold text-gray-800 mb-2">
           9.0 TOP ISSUES [Technical/ Commercial related activities & requires
@@ -64,7 +64,7 @@ const TopIssuesTable = ({
       <div className="overflow-x-auto">
         <table className="w-full border-collapse bg-white rounded-lg overflow-hidden shadow-sm">
           <thead>
-            <tr className="bg-amber-50">
+            <tr className="bg-gray-200">
               <th className="border border-gray-300 px-4 py-3 text-left font-semibold text-gray-700 w-2/5">
                 Issue
               </th>
@@ -86,7 +86,7 @@ const TopIssuesTable = ({
             {allRows.map((item, index) => (
               <tr
                 key={index}
-                className={index % 2 === 0 ? "bg-amber-50" : "bg-white"}
+                className={index % 2 === 0 ? "bg-gray-100" : "bg-white"}
               >
                 <td className="border border-gray-300 px-4 py-3 text-gray-800 min-h-[40px]">
                   {item.issue}

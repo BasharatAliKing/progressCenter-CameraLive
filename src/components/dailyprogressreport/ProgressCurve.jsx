@@ -12,7 +12,7 @@ import {
 
 const ProgressSCurve = ({ data }) => {
   return (
-    <div className="w-full bg-amber-50 p-8 shadow-md mb-6">
+    <div className="w-full bg-[#e7e4dc] rounded-md p-8 shadow-md mb-6">
       <h2 className=" text-center text-xl font-bold text-gray-800 mb-4">
         Progress S-Curve (Planned vs Actual)
       </h2>

@@ -22,12 +22,11 @@ const Photos = ({ photos = [] }) => {
   const displayPhotos = photos.length > 0 ? photos : defaultPhotos;
 
   return (
-    <div className="bg-amber-50  shadow-sm">
-      <div className=" p-2">
+    <div className="bg-[#e7e4dc] my-4 pb-4 rounded-md shadow-sm">
+      <div className="py-4">
         <h2 className="text-lg font-bold text-center">Progress Photos</h2>
       </div>
-
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-2 p-2">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-2 px-4">
         {displayPhotos.map((photo, index) => (
           <div key={index} className="bg-gray-50 rounded overflow-hidden">
             <div className="relative h-48">

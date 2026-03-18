@@ -94,14 +94,14 @@ const FinancialStatusDashboard = ({ certifiedPaymentsData, cashFlowData }) => {
   };
 
   return (
-    <div className="w-full bg-amber-50 p-4 rounded-lg">
+    <div className="w-full bg-[#e7e4dc] p-4 rounded-lg">
       <h2 className="text-center text-xl font-bold text-gray-800 mb-4">
         FINANCIAL STATUS
       </h2>
 
       <div className="flex flex-col lg:flex-row gap-4">
         {/* Certified Payments */}
-        <div className="flex-1 bg-amber-50 rounded-lg p-3 shadow">
+        <div className="flex-1  rounded-lg p-3 shadow">
           <h3 className="text-lg font-semibold text-gray-700 mb-3 text-center">
             Certified Payments
           </h3>
@@ -125,7 +125,7 @@ const FinancialStatusDashboard = ({ certifiedPaymentsData, cashFlowData }) => {
         </div>
 
         {/* Cash Flow */}
-        <div className="flex-1 bg-amber-50 rounded-lg p-3 shadow">
+        <div className="flex-1 rounded-lg p-3 shadow">
           <h3 className="text-lg font-semibold text-gray-700 mb-3 text-center">
             Cash Flow
           </h3>

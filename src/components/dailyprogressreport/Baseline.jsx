@@ -43,9 +43,9 @@ const Baseline = ({ data }) => {
 
   return (
     <div className="w-full overflow-x-auto">
-      <table className="w-full border-collapse border border-gray-400 bg-amber-50 rounded-2x2">
+      <table className="w-full border-collapse border border-gray-400 ">
         <thead>
-          <tr className="bg-green-200">
+          <tr className="bg-primary text-white">
             <th className="px-4 py-3 border border-gray-400 text-left font-bold text-sm">
               BASELINE / RECOVERY PROGRAMME COMPARISON
             </th>
@@ -66,7 +66,7 @@ const Baseline = ({ data }) => {
             </th>
           </tr>
           <tr>
-            <th className=" rounded-2x2 px-4 py-2 border border-gray-400 text-left font-bold text-sm  bg-amber-50">
+            <th className=" rounded-2x2 px-4 py-2 border border-gray-400 text-left font-bold text-sm bg-[#e7e4dc]">
               PROGRAM ID
             </th>
             <th className="px-4 py-2 border border-gray-400"></th>

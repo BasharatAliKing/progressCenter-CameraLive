@@ -81,7 +81,7 @@ const ManpowerHistogram = ({
   const CustomTooltip = ({ active, payload, label }) => {
     if (active && payload && payload.length) {
       return (
-        <div className="bg-white p-3 border border-gray-300 rounded shadow-lg">
+        <div className=" p-3 border border-gray-300 rounded shadow-lg">
           <p className="font-medium text-gray-800">{`Period: ${label}`}</p>
           {payload.map((entry, index) => (
             <p key={index} style={{ color: entry.color }}>
@@ -97,7 +97,7 @@ const ManpowerHistogram = ({
   };
 
   return (
-    <div className="w-full bg-amber-50 p-6 rounded-lg shadow-lg">
+    <div className="w-full bg-[#e7e4dc] p-6 rounded-lg shadow-lg">
       <div className="mb-6">
         <h2 className="text-xl font-bold text-gray-800 text-center mb-4">
           MANPOWER HISTOGRAM
@@ -109,7 +109,7 @@ const ManpowerHistogram = ({
         <div className="overflow-x-auto">
           <table className="w-full border-collapse">
             <thead>
-              <tr className="bg-amber-50">
+              <tr className="bg-gray-200">
                 <th className="border border-gray-300 px-4 py-2 text-center font-bold text-gray-700">
                   MONTH
                 </th>
@@ -122,7 +122,7 @@ const ManpowerHistogram = ({
                   </th>
                 ))}
               </tr>
-              <tr className="bg-amber-50">
+              <tr className="bg-gray-100">
                 <th className="border border-gray-300 px-4 py-2 text-center font-bold text-gray-700">
                   WEEK NO.
                 </th>
@@ -150,7 +150,7 @@ const ManpowerHistogram = ({
                   </td>
                 ))}
               </tr>
-              <tr className="bg-amber-50">
+              <tr className="bg-gray-100">
                 <td className="border border-gray-300 px-4 py-2 font-semibold text-gray-800">
                   Overal Manpower (Actual)
                 </td>
@@ -176,7 +176,7 @@ const ManpowerHistogram = ({
                   </td>
                 ))}
               </tr>
-              <tr className="bg-amber-50">
+              <tr className="bg-gray-100">
                 <td className="border border-gray-300 px-4 py-2 font-semibold text-gray-800">
                   Civil Manpower (Actual)
                 </td>
@@ -202,7 +202,7 @@ const ManpowerHistogram = ({
                   </td>
                 ))}
               </tr>
-              <tr className="bg-amber-50">
+              <tr className="bg-gray-100">
                 <td className="border border-gray-300 px-4 py-2 font-semibold text-gray-800">
                   MEP Manpower (Actual)
                 </td>

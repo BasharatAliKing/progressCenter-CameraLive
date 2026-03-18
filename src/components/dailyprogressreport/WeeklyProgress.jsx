@@ -65,7 +65,7 @@ const WeeklyProgressTasks = ({
         </div>
 
         {/* Completed Activities Section */}
-        <div className="bg-yellow-200 border-l border-r border-gray-300 px-4 py-2 text-center font-bold text-gray-800">
+        <div className="bg-primary border-l border-r border-gray-300 px-4 py-2 text-center font-bold text-white">
           Completed Activities
         </div>
 
@@ -73,7 +73,7 @@ const WeeklyProgressTasks = ({
           <div
             key={`completed-${index}`}
             className={`border-l border-r border-b border-gray-300 px-4 py-2 min-h-[40px] text-sm text-gray-700 ${
-              index % 2 === 0 ? "bg-amber-50" : "bg-white"
+              index % 2 === 0 ? "bg-gray-100" : "bg-white"
             }`}
           >
             {activity}
@@ -81,7 +81,7 @@ const WeeklyProgressTasks = ({
         ))}
 
         {/* In Progress Activities Section */}
-        <div className="bg-yellow-200 border-l border-r border-gray-300 px-4 py-2 text-center font-bold text-gray-800">
+        <div className="bg-primary border-l border-r border-gray-300 px-4 py-2 text-center font-bold text-white">
           In Progress Activities
         </div>
 
@@ -89,7 +89,7 @@ const WeeklyProgressTasks = ({
           <div
             key={`progress-${index}`}
             className={`border-l border-r border-b border-gray-300 px-4 py-2 min-h-[40px] text-sm text-gray-700 ${
-              index % 2 === 0 ? "bg-amber-50" : "bg-white"
+              index % 2 === 0 ? "bg-gray-100" : "bg-white"
             }`}
           >
             {activity}
@@ -100,7 +100,7 @@ const WeeklyProgressTasks = ({
   };
 
   return (
-    <div className="w-full bg-amber-50 p-6 rounded-lg shadow-lg">
+    <div className="w-full bg-[#e7e4dc] p-6 rounded-lg shadow-lg">
       <div className="mb-4">
         <h2 className="text-xl font-bold text-gray-800 text-center mb-4">
           WEEKLY PROGRESS MAIN TASKS

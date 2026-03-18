@@ -160,7 +160,7 @@ const EngineeringQualityKPIs = ({
   );
 
   return (
-    <div className="w-full bg-amber-50 p-6 rounded-lg shadow-lg">
+    <div className="w-full bg-[#e7e4dc] p-6 rounded-lg shadow-lg">
       <h2 className="text-xl font-bold text-gray-800 mb-6 text-center">
         ENGINEERING QUALITY KPIs
       </h2>
@@ -175,7 +175,7 @@ const EngineeringQualityKPIs = ({
           <div className="overflow-x-auto">
             <table className="w-full text-xs border-collapse">
               <thead>
-                <tr className="bg-amber-50">
+                <tr className="bg-[#e7e4dc]">
                   <th className="border border-gray-300 px-2 py-2 text-left font-semibold">
                     Category
                   </th>
@@ -197,7 +197,7 @@ const EngineeringQualityKPIs = ({
                 {kpiData.map((item, index) => (
                   <tr
                     key={index}
-                    className={index % 2 === 0 ? "bg-amber-50" : "bg-white"}
+                    className={index % 2 === 0 ? "bg-[#e7e4dc]" : "bg-white"}
                   >
                     <td className="border border-gray-300 px-2 py-2">
                       {item.category}
@@ -229,7 +229,7 @@ const EngineeringQualityKPIs = ({
           <div className="overflow-x-auto">
             <table className="w-full text-xs border-collapse">
               <thead>
-                <tr className="bg-amber-50">
+                <tr className="bg-[#e7e4dc]">
                   <th className="border border-gray-300 px-2 py-2 text-left font-semibold">
                     Category
                   </th>
@@ -251,7 +251,7 @@ const EngineeringQualityKPIs = ({
                 {rfiResponseData.map((item, index) => (
                   <tr
                     key={index}
-                    className={index % 2 === 0 ? "bg-amber-50" : "bg-white"}
+                    className={index % 2 === 0 ? "bg-[#e7e4dc]" : "bg-white"}
                   >
                     <td className="border border-gray-300 px-2 py-2">
                       {item.category}
