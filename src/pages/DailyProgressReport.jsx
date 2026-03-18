@@ -108,7 +108,7 @@ function DailyProgressReport() {
   }
 
   return (
-    <div className="p-4 bg-gradient-to-br from-blue-50 via-amber-50 to-green-50 min-h-screen">
+    <div className="p-4">
       {/* Header with download button */}
       <div className="flex justify-between items-center bg-primary rounded-md py-4 px-6 mb-6 shadow-lg print-hide">
         <div className="flex items-center gap-3">
