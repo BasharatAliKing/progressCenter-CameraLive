@@ -167,7 +167,6 @@ const API_URL = import.meta.env.VITE_API_URL;  // ✅ Correct way in Vite
           }
           const res=await fetch(`${API_URL}/schedule`);
           const json=await res.json();
-          console.log(json);
           // Normalize various possible API shapes into our expected array-of-projects
           const monthMap = { Jan:0, Feb:1, Mar:2, Apr:3, May:4, Jun:5, Jul:6, Aug:7, Sep:8, Oct:9, Nov:10, Dec:11 };
           const parseDate = (s) => {

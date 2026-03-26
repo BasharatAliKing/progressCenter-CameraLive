@@ -15,10 +15,14 @@ import RisksTable from "../components/dailyprogressreport/Risks";
 import WeeklyProgressTasks from "../components/dailyprogressreport/WeeklyProgress";
 import OverallProgress from "../components/dailyprogressreport/OverallProgress";
 import Photos from "../components/dailyprogressreport/Photos";
+import AddDailyReportModal from "../components/dailyprogressreport/AddDailyReportModel";
+import { getUserData } from "../utilities/auth";
+import UpdateDailyReport from "../components/dailyprogressreport/UpdateDailyReport";
 const API_URL = import.meta.env.VITE_API_URL;
 function DailyProgressReport() {
   const { id } = useParams();
   const dashboardRef = useRef();
+   const userData = getUserData();
   const [report, setReport] = useState(null);
   // NEW PRINT TO PDF FUNCTION - Most Reliable Method
   const printToPDF = () => {
@@ -101,7 +105,7 @@ function DailyProgressReport() {
   useEffect(() => {
     fetchReport();
   }, []);
-  if (!report) {
+  if (!report && userData?.role !== "admin") {
     return (
       <div className="p-4 text-center text-lg font-bold">Loading report...</div>
     );
@@ -109,6 +113,13 @@ function DailyProgressReport() {
 
   return (
     <div className="p-4">
+     {userData.role === 'admin' && (
+        !report ?
+       <AddDailyReportModal/> :
+       <UpdateDailyReport/>
+     )
+      }
+    
       {/* Header with download button */}
       <div className="flex justify-between items-center bg-primary rounded-md py-4 px-6 mb-6 shadow-lg print-hide">
         <div className="flex items-center gap-3">
@@ -131,41 +142,41 @@ function DailyProgressReport() {
       <div ref={dashboardRef} className="print-content bg-white rounded-lg shadow-lg p-6">
         <div className="mb-4">
           <ProjectHeader
-            employer={report.employer}
-            contractor={report.contractor}
-            consultant={report.consultant}
-            project={report.project_name}
-            plotNo={report.project_id}
-            reportNo={report.report_no}
-            monthNo={report.month}
-            weekNo={report.week_no}
-            totalDays={parseInt(report.duration)}
+            employer={report?.employer}
+            contractor={report?.contractor}
+            consultant={report?.consultant}
+            project={report?.project_name}
+            plotNo={report?.project_id}
+            reportNo={report?.report_no}
+            monthNo={report?.month}
+            weekNo={report?.week_no}
+            totalDays={parseInt(report?.duration)}
           />
         </div>
 
         <div className=" grid grid-cols-2 gap-4">
            <TimeDataClaims
-              commencementDate={report.commencement_date}
-              duration={report.duration}
-              completion={report.completion_date}
-              forecastCompletion={report.forcast_completion_date}
-              eot={report.eot_granted}
-              anticipatedEot={report.anticipated_eot}
+              commencementDate={report?.commencement_date}
+              duration={report?.duration}
+              completion={report?.completion_date}
+              forecastCompletion={report?.forcast_completion_date}
+              eot={report?.eot_granted}
+              anticipatedEot={report?.anticipated_eot}
             />
             <ComData
-              contractValue={report.contract_value}
-              certifiedToDate={report.certified_to_date}
-              cumulativePercentage={report.cumullative_percentage_certified}
-              confirmedVariations={report.confirmed_variations}
-              revisedContractValue={report.revised_control_value}
-              costOfChanges={report.cost_of_changes}
+              contractValue={report?.contract_value}
+              certifiedToDate={report?.certified_to_date}
+              cumulativePercentage={report?.cumullative_percentage_certified}
+              confirmedVariations={report?.confirmed_variations}
+              revisedContractValue={report?.revised_control_value}
+              costOfChanges={report?.cost_of_changes}
             />
         </div>
 
         <div className="space-y-4">
           <div className="py-4 rounded-lg ">
             <Baseline
-              data={report.baseline && report.baseline.map(b => ({
+              data={report?.baseline && report?.baseline.map(b => ({
                 programId: b.recovery_programe_comparison,
                 submissionDate: b.submission_date,
                 approvalDate: b.Approval_date,
@@ -180,7 +191,7 @@ function DailyProgressReport() {
             <CashGraph />
           </div>
           <ProgressSCurve
-            data={report.progressSCurve && report.progressSCurve.map(s => ({
+            data={report?.progressSCurve && report?.progressSCurve.map(s => ({
               month: s.month,
               planned: parseFloat(s.planned),
               actual: parseFloat(s.actual),
@@ -188,11 +199,11 @@ function DailyProgressReport() {
           />
           <ProjectProgressTable
             overallProgress={{
-              planned: parseFloat(report.overall_schedule_performance_percentage),
-              actual: parseFloat(report.overall_actual_performance_percentage),
-              difference: parseFloat(report.overall_actual_performance_percentage) - parseFloat(report.overall_schedule_performance_percentage),
+              planned: parseFloat(report?.overall_schedule_performance_percentage),
+              actual: parseFloat(report?.overall_actual_performance_percentage),
+              difference: parseFloat(report?.overall_actual_performance_percentage) - parseFloat(report?.overall_schedule_performance_percentage),
             }}
-            workBreakdownStructure={report.overallProgress && report.overallProgress.map(w => ({
+            workBreakdownStructure={report?.overallProgress && report?.overallProgress.map(w => ({
               name: w.progress_name,
               planned: parseFloat(w.progress_planned_thisWeek),
               actual: parseFloat(w.progress_actual_thisWeek),
@@ -200,12 +211,12 @@ function DailyProgressReport() {
             }))}
           />
           <EngineeringQualityKPIs
-            data={report.engineeringQuantity}
+            data={report?.engineeringQuantity}
           />
           <div>
             <OverallProgress
-              programId={report.project_id}
-              currentPeriodData={report.progressSCurve && report.progressSCurve.map(s => ({
+              programId={report?.project_id}
+              currentPeriodData={report?.progressSCurve && report?.progressSCurve.map(s => ({
                 month: s.month,
                 planned: parseFloat(s.planned),
                 actual: parseFloat(s.actual),
@@ -213,7 +224,7 @@ function DailyProgressReport() {
             />
           </div>
           <TopIssuesTable
-            issues={report.topIssues && report.topIssues.map(i => ({
+            issues={report?.topIssues && report?.topIssues.map(i => ({
               issue: i.issue,
               originator: i.originator,
               category: i.category,
@@ -224,12 +235,12 @@ function DailyProgressReport() {
           />
           <div>
             <ManpowerHistogram
-              data={report.manPowerHistogram}
+              data={report?.manPowerHistogram}
             />
           </div>
           <div>
             <RisksTable
-              risks={report.mainRisks && report.mainRisks.map(r => ({
+              risks={report?.mainRisks && report?.mainRisks.map(r => ({
                 description: r.risk_description,
                 category: r.risk_category,
                 impact: r.risk_impact,
@@ -237,11 +248,11 @@ function DailyProgressReport() {
               }))}
             />
             <Photos
-              photos={report.progressPhotos}
+              photos={report?.progressPhotos}
             />
             <div>
               <WeeklyProgressTasks
-                weeks={report.weeklyProgress || []}
+                weeks={report?.weeklyProgress || []}
                 emptyRowsPerSection={5}
               />
             </div>
