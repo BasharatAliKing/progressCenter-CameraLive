@@ -1,16 +1,30 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { CgClose } from "react-icons/cg";
+import { useParams } from "react-router-dom";
 
 const API_URL = import.meta.env.VITE_API_URL;
 
 export default function AddDailyReportModal({ fetchReport }) {
   const [open, setOpen] = useState(false);
-
+  const params=useParams();
+  useEffect(()=>{
+     const getProjectName = async ()=>{
+          try{
+            const res = await fetch(`${API_URL}/camera/${params.id}`);
+            const data = await res.json();
+            console.log(data?.camera?.location);
+            setFormData({ ...formData, project_name: data?.camera?.location || "" });
+          } catch(err){
+            console.error("Error fetching project name:", err);
+          }
+     }
+     getProjectName();
+  },[]);
   const [formData, setFormData] = useState({
     employer: "",
     contractor: "",
     project_name: "",
-    project_id: "",
+    project_id: params.id || "",
     consultant: "",
     report_no: "",
     month: "",
@@ -198,14 +212,18 @@ export default function AddDailyReportModal({ fetchReport }) {
                 "overall_actual_performance_percentage",
                 "overall_progress_daysAheadDelay",
               ].map((field) => (
+                 <div key={field} className="flex flex-col mb-2">
+      <label className="mb-1 font-semibold text-sm capitalize" htmlFor={field}>
+        {field.replace(/_/g, " ")}
+      </label>
                 <input
-                  key={field}
-                  name={field}
+                 name={field}
                   placeholder={field}
                   value={formData[field]}
                   onChange={handleChange}
                   className="border p-2 rounded-md"
                 />
+                </div>
               ))}
             </div>
             {/* BASELINE */}
