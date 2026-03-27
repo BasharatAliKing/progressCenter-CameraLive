@@ -139,20 +139,23 @@ export default function UpdateDailyReport({ fetchReport }) {
         className="grid grid-cols-4 gap-2 mb-2 border p-2 relative rounded"
       >
         {fields.map((field) => (
-            <div key={field} className="flex flex-col mb-2">
-      <label className="mb-1 font-semibold text-sm capitalize" htmlFor={field}>
-        {field.replace(/_/g, " ")}
-      </label>
-          <input
-            placeholder={field}
-            value={item[field]}
-            onChange={(e) => {
-              const x = [...formData[arrayName]];
-              x[i][field] = e.target.value;
-              setFormData({ ...formData, [arrayName]: x });
-            }}
-            className="border p-2 rounded-md"
-          />
+          <div key={field} className="flex flex-col mb-2">
+            <label
+              className="mb-1 font-semibold text-sm capitalize"
+              htmlFor={field}
+            >
+              {field.replace(/_/g, " ")}
+            </label>
+            <input
+              placeholder={field}
+              value={item[field]}
+              onChange={(e) => {
+                const x = [...formData[arrayName]];
+                x[i][field] = e.target.value;
+                setFormData({ ...formData, [arrayName]: x });
+              }}
+              className="border p-2 rounded-md"
+            />
           </div>
         ))}
 
