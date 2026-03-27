@@ -6,20 +6,23 @@ const API_URL = import.meta.env.VITE_API_URL;
 
 export default function AddDailyReportModal({ fetchReport }) {
   const [open, setOpen] = useState(false);
-  const params=useParams();
-  useEffect(()=>{
-     const getProjectName = async ()=>{
-          try{
-            const res = await fetch(`${API_URL}/camera/${params.id}`);
-            const data = await res.json();
-            console.log(data?.camera?.location);
-            setFormData({ ...formData, project_name: data?.camera?.location || "" });
-          } catch(err){
-            console.error("Error fetching project name:", err);
-          }
-     }
-     getProjectName();
-  },[]);
+  const params = useParams();
+  useEffect(() => {
+    const getProjectName = async () => {
+      try {
+        const res = await fetch(`${API_URL}/camera/${params.id}`);
+        const data = await res.json();
+        console.log(data?.camera?.location);
+        setFormData({
+          ...formData,
+          project_name: data?.camera?.location || "",
+        });
+      } catch (err) {
+        console.error("Error fetching project name:", err);
+      }
+    };
+    getProjectName();
+  }, []);
   const [formData, setFormData] = useState({
     employer: "",
     contractor: "",
@@ -130,9 +133,12 @@ export default function AddDailyReportModal({ fetchReport }) {
         className="grid grid-cols-4 gap-2 mb-2 border p-2 relative rounded"
       >
         {fields.map((field) => (
+            <div key={field} className="flex flex-col mb-2">
+      <label className="mb-1 font-semibold text-sm capitalize" htmlFor={field}>
+        {field.replace(/_/g, " ")}
+      </label>
           <input
-            key={field}
-            placeholder={field}
+           placeholder={field}
             value={item[field]}
             onChange={(e) => {
               const x = [...formData[arrayName]];
@@ -141,6 +147,7 @@ export default function AddDailyReportModal({ fetchReport }) {
             }}
             className="border p-2 rounded-md"
           />
+          </div>
         ))}
 
         <button
@@ -168,7 +175,7 @@ export default function AddDailyReportModal({ fetchReport }) {
       <div className="w-full ml-auto flex justify-end mb-4">
         <button
           onClick={() => setOpen(true)}
-          className="px-4 py-2 bg-green-600 text-white rounded"
+          className="px-4 py-2 bg-green-600 cursor-pointer text-white rounded"
         >
           Add Report
         </button>
@@ -179,7 +186,10 @@ export default function AddDailyReportModal({ fetchReport }) {
           <div className="bg-white w-[95%] h-[95vh] overflow-y-auto p-6 rounded">
             <div className="flex justify-between mb-4">
               <h2 className="text-xl font-bold">Add Report</h2>
-              <button onClick={() => setOpen(false)}>
+              <button
+                className="bg-primary p-1 rounded-full text-white px-[6px] cursor-pointer"
+                onClick={() => setOpen(false)}
+              >
                 <CgClose />
               </button>
             </div>
@@ -212,17 +222,20 @@ export default function AddDailyReportModal({ fetchReport }) {
                 "overall_actual_performance_percentage",
                 "overall_progress_daysAheadDelay",
               ].map((field) => (
-                 <div key={field} className="flex flex-col mb-2">
-      <label className="mb-1 font-semibold text-sm capitalize" htmlFor={field}>
-        {field.replace(/_/g, " ")}
-      </label>
-                <input
-                 name={field}
-                  placeholder={field}
-                  value={formData[field]}
-                  onChange={handleChange}
-                  className="border p-2 rounded-md"
-                />
+                <div key={field} className="flex flex-col mb-2">
+                  <label
+                    className="mb-1 font-semibold text-sm capitalize"
+                    htmlFor={field}
+                  >
+                    {field.replace(/_/g, " ")}
+                  </label>
+                  <input
+                    name={field}
+                    placeholder={field}
+                    value={formData[field]}
+                    onChange={handleChange}
+                    className="border p-2 rounded-md"
+                  />
                 </div>
               ))}
             </div>

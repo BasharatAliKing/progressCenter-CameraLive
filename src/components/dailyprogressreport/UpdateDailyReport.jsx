@@ -6,7 +6,7 @@ const API_URL = import.meta.env.VITE_API_URL;
 
 export default function UpdateDailyReport({ fetchReport }) {
   const [open, setOpen] = useState(false);
-  const params=useParams();
+  const params = useParams();
   const [formData, setFormData] = useState({
     employer: "",
     contractor: "",
@@ -96,37 +96,40 @@ export default function UpdateDailyReport({ fetchReport }) {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
- const getReportDataByProjectId = async () => {
-  try {
-    const res = await fetch(`${API_URL}/dailyprogress/${params.id}`, {
-      method: "GET",
-    });
-    const data = await res.json();
-    const report = Array.isArray(data.data) ? data.data[0] : data.data;
-    if (report) {
-      setFormData((prev) => ({
-        ...prev,
-        ...report,
-      }));
+  const getReportDataByProjectId = async () => {
+    try {
+      const res = await fetch(`${API_URL}/dailyprogress/${params.id}`, {
+        method: "GET",
+      });
+      const data = await res.json();
+      const report = Array.isArray(data.data) ? data.data[0] : data.data;
+      if (report) {
+        setFormData((prev) => ({
+          ...prev,
+          ...report,
+        }));
+      }
+    } catch (error) {
+      console.error("Error fetching report data:", error);
     }
-  } catch (error) {
-    console.error("Error fetching report data:", error);
-  }
-};
-  useEffect(()=>{
+  };
+  useEffect(() => {
     getReportDataByProjectId();
-  },[]);
-const handleSubmit = async () => {
-  const res = await fetch(`${API_URL}/dailyprogress/${formData._id || params.id}`, {
-    method: "PUT",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(formData),
-  });
-  const data = await res.json();
-  alert("Report updated successfully!");
-  setOpen(false);
-  if (fetchReport) fetchReport();
-};
+  }, []);
+  const handleSubmit = async () => {
+    const res = await fetch(
+      `${API_URL}/dailyprogress/${formData._id || params.id}`,
+      {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(formData),
+      },
+    );
+    const data = await res.json();
+    alert("Report updated successfully!");
+    setOpen(false);
+    if (fetchReport) fetchReport();
+  };
 
   // reusable array renderer
   const renderArrayInput = (arrayName, fields) => {
@@ -136,8 +139,11 @@ const handleSubmit = async () => {
         className="grid grid-cols-4 gap-2 mb-2 border p-2 relative rounded"
       >
         {fields.map((field) => (
+            <div key={field} className="flex flex-col mb-2">
+      <label className="mb-1 font-semibold text-sm capitalize" htmlFor={field}>
+        {field.replace(/_/g, " ")}
+      </label>
           <input
-            key={field}
             placeholder={field}
             value={item[field]}
             onChange={(e) => {
@@ -147,6 +153,7 @@ const handleSubmit = async () => {
             }}
             className="border p-2 rounded-md"
           />
+          </div>
         ))}
 
         <button
@@ -174,7 +181,7 @@ const handleSubmit = async () => {
       <div className="w-full ml-auto flex justify-end mb-4">
         <button
           onClick={() => setOpen(true)}
-          className="px-4 py-2 bg-green-600 text-white rounded"
+          className="px-4 py-2 bg-green-600 cursor-pointer text-white rounded"
         >
           Update Report
         </button>
@@ -185,54 +192,60 @@ const handleSubmit = async () => {
           <div className="bg-white w-[95%] h-[95vh] overflow-y-auto p-6 rounded">
             <div className="flex justify-between mb-4">
               <h2 className="text-xl font-bold">Update Report</h2>
-              <button onClick={() => setOpen(false)}>
+              <button
+                className="bg-primary p-1 rounded-full px-[6px] cursor-pointer text-white"
+                onClick={() => setOpen(false)}
+              >
                 <CgClose />
               </button>
             </div>
             {/* BASIC INFO */}
-         <div className="grid grid-cols-4 gap-2">
-  {[
-    "employer",
-    "contractor",
-    "project_name",
-    "project_id",
-    "consultant",
-    "report_no",
-    "month",
-    "week_no",
-    "elapsed_date",
-    "remaining_days",
-    "commencement_date",
-    "duration",
-    "completion_date",
-    "forcast_completion_date",
-    "eot_granted",
-    "anticipated_eot",
-    "contract_value",
-    "confirmed_variations",
-    "revised_control_value",
-    "cumullative_percentage_certified",
-    "certified_to_date",
-    "cost_of_changes",
-    "overall_schedule_performance_percentage",
-    "overall_actual_performance_percentage",
-    "overall_progress_daysAheadDelay",
-  ].map((field) => (
-    <div key={field} className="flex flex-col mb-2">
-      <label className="mb-1 font-semibold text-sm capitalize" htmlFor={field}>
-        {field.replace(/_/g, " ")}
-      </label>
-      <input
-        id={field}
-        name={field}
-        placeholder={field}
-        value={formData[field]}
-        onChange={handleChange}
-        className="border p-2 rounded-md"
-      />
-    </div>
-  ))}
-</div>
+            <div className="grid grid-cols-4 gap-2">
+              {[
+                "employer",
+                "contractor",
+                "project_name",
+                "project_id",
+                "consultant",
+                "report_no",
+                "month",
+                "week_no",
+                "elapsed_date",
+                "remaining_days",
+                "commencement_date",
+                "duration",
+                "completion_date",
+                "forcast_completion_date",
+                "eot_granted",
+                "anticipated_eot",
+                "contract_value",
+                "confirmed_variations",
+                "revised_control_value",
+                "cumullative_percentage_certified",
+                "certified_to_date",
+                "cost_of_changes",
+                "overall_schedule_performance_percentage",
+                "overall_actual_performance_percentage",
+                "overall_progress_daysAheadDelay",
+              ].map((field) => (
+                <div key={field} className="flex flex-col mb-2">
+                  <label
+                    className="mb-1 font-semibold text-sm capitalize"
+                    htmlFor={field}
+                  >
+                    {field.replace(/_/g, " ")}
+                  </label>
+                  <input
+                    id={field}
+                    name={field}
+                    placeholder={field}
+                    value={formData[field]}
+                    onChange={handleChange}
+                    className="border p-2 rounded-md"
+                  />
+                </div>
+              ))}
+            </div>
             {/* BASELINE */}
             <h2 className="font-bold mt-6">Baseline</h2>
             {renderArrayInput("baseline", [
@@ -508,7 +521,7 @@ const handleSubmit = async () => {
             <div className="mt-6">
               <button
                 onClick={handleSubmit}
-                className="bg-blue-600 text-white px-6 py-2 rounded"
+                className="bg-blue-600 cursor-pointer text-white px-6 py-2 rounded"
               >
                 Update Report
               </button>
