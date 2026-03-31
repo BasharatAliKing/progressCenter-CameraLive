@@ -9,7 +9,8 @@ const ProjectHeader = (props) => {
     location,
     reportNo,
     monthNo,
-    plotNo,
+    elapsed_date,
+    remaining_days,
     weekNo,
     totalDays,
   } = props;
@@ -17,7 +18,13 @@ const ProjectHeader = (props) => {
   const [currentDate, setCurrentDate] = useState("");
   const [elapsedDays, setElapsedDays] = useState(0);
   const [remainingDays, setRemainingDays] = useState(0);
+   function getWeekOfMonth(date) {
+  const d = new Date(date);
+  return Math.ceil(d.getDate() / 7);
+}
 
+// usage
+const weekno = getWeekOfMonth(new Date());
   useEffect(() => {
     // Set current date using window features
     const today = new Date();
@@ -27,11 +34,11 @@ const ProjectHeader = (props) => {
       year: "numeric",
     });
     setCurrentDate(formattedDate);
-
-    // Example calculation (replace with logic)
-    const elapsed = 290;
-    setElapsedDays(elapsed);
-    setRemainingDays(totalDays - elapsed);
+   
+    // // Example calculation (replace with logic)
+    // const elapsed = 290;
+    // setElapsedDays(elapsed);
+    // setRemainingDays(totalDays - elapsed);
   }, [totalDays]);
 
   return (
@@ -67,17 +74,17 @@ const ProjectHeader = (props) => {
         <div className="border border-gray-400 p-1">
           Week No.
           <br />
-          <span className="font-medium">{weekNo}</span>
+          <span className="font-medium">Week-{weekno}</span>
         </div>
         <div className="border border-gray-400 p-1">
           Elapsed Days
           <br />
-          <span className="font-medium">{elapsedDays}</span>
+          <span className="font-medium">{elapsed_date}</span>
         </div>
         <div className="border rounded-r-md border-gray-400 p-1">
           Remaining Days
           <br />
-          <span className="font-medium">{remainingDays}</span>
+          <span className="font-medium">{remaining_days}</span>
         </div>
       </div>
     </div>

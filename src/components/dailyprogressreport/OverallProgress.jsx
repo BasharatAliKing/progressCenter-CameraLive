@@ -1,25 +1,6 @@
-const ProgressAnalysisTable = ({
-  overallSchedulePerformance = 25.96,
-  overallActivityPerformance = 40.06,
-  variance = 14.1,
-  daysAheadDelay = 42,
-  programId = "Baseline",
-  thisWeek = {
-    planned: 25.96,
-    actual: 40.06,
-    position: 14.1,
-  },
-  lastWeek = {
-    planned: 24.99,
-    actual: 39.28,
-    position: 14.29,
-  },
-  gainLoss = -0.19,
-}) => {
-  const formatPercentage = (value) => `${value.toFixed(2)}%`;
-  const formatGainLoss = (value) =>
-    `${value >= 0 ? "+" : ""}${value.toFixed(3)}%`;
-
+const ProgressAnalysisTable = (data) => {
+  const mainData=data.data
+ console.log(data.data);
   return (
     <div className="w-full max-w-5*1 mx-auto bg-gray-200 shadow-lg rounded-lg overflow-hidden">
       {/* Header */}
@@ -39,7 +20,7 @@ const ProgressAnalysisTable = ({
                 Overall Schedule Performance % (1)
               </div>
               <div className="text-lg font-bold">
-                {formatPercentage(overallSchedulePerformance)}
+               {mainData?.overall_schedule_performance_percentage || '0%'}
               </div>
             </td>
             <td className="border border-gray-400 p-3 text-center font-semibold">
@@ -47,18 +28,18 @@ const ProgressAnalysisTable = ({
                 Overall Activity Performance % (2)
               </div>
               <div className="text-lg font-bold">
-                {formatPercentage(overallActivityPerformance)}
+                {mainData?.overall_actual_performance_percentage || '0%'}
               </div>
             </td>
             <td className="border border-gray-400 p-3 text-center font-semibold">
               <div className="text-sm mb-1">Variance (3) = (1-2)</div>
               <div className="text-lg font-bold">
-                {formatPercentage(variance)}
+                {}
               </div>
             </td>
             <td className="border border-gray-400 p-3 text-center font-semibold">
               <div className="text-sm mb-1">(Days) +Ahead / -Delay</div>
-              <div className="text-lg font-bold">{daysAheadDelay}</div>
+              <div className="text-lg font-bold">{mainData?.overall_progress_daysAheadDelay || '0'}</div>
             </td>
             <td className="border border-gray-400 bg-gray-100"></td>
             <td className="border border-gray-400 bg-gray-100"></td>
@@ -115,32 +96,43 @@ const ProgressAnalysisTable = ({
           </tr>
 
           {/* Data Row */}
-          <tr className="bg-white">
+          {
+            mainData?.overallProgress.map((val,index)=>(
+<tr className="bg-white">
             <td className="border border-gray-400 p-3 text-center font-semibold text-red-600">
-              {programId}
+             {val.progress_name}
             </td>
             <td className="border border-gray-400 p-3 text-center">
-              {formatPercentage(thisWeek.planned)}
+              {val.progress_planned_thisWeek}
             </td>
             <td className="border border-gray-400 p-3 text-center">
-              {formatPercentage(thisWeek.actual)}
+              {val.progress_actual_thisWeek}
             </td>
             <td className="border border-gray-400 p-3 text-center">
-              {formatPercentage(thisWeek.position)}
+             {(
+    parseFloat(val.progress_planned_thisWeek || 0) -
+    parseFloat(val.progress_actual_thisWeek || 0)
+  ).toFixed(2)}%
             </td>
             <td className="border border-gray-400 p-3 text-center">
-              {formatPercentage(lastWeek.planned)}
+              {val.progress_planned_lastWeek}
             </td>
             <td className="border border-gray-400 p-3 text-center">
-              {formatPercentage(lastWeek.actual)}
+              {val.progress_actual_lastWeek}
             </td>
             <td className="border border-gray-400 p-3 text-center">
-              {formatPercentage(lastWeek.position)}
+              {(
+    parseFloat(val.progress_planned_lastWeek || 0) -
+    parseFloat(val.progress_actual_lastWeek || 0)
+  ).toFixed(2)}%
             </td>
             <td className="border border-gray-400 p-3 text-center">
-              {formatGainLoss(gainLoss)}
+              {}
             </td>
           </tr>
+            ))
+          }
+          
         </tbody>
       </table>
     </div>
@@ -148,30 +140,10 @@ const ProgressAnalysisTable = ({
 };
 
 // Example usage with default values
-function App() {
-  // Example data - you can easily change these values
-  const exampleData = {
-    overallSchedulePerformance: 25.96,
-    overallActivityPerformance: 40.06,
-    variance: 14.1,
-    daysAheadDelay: 42,
-    programId: "Baseline",
-    thisWeek: {
-      planned: 25.96,
-      actual: 40.06,
-      position: 14.1,
-    },
-    lastWeek: {
-      planned: 24.99,
-      actual: 39.28,
-      position: 14.29,
-    },
-    gainLoss: -0.19,
-  };
-
+function App(data) {
   return (
     <div className="p-8 bg-[#e7e4dc] rounded-2xl ">
-      <ProgressAnalysisTable {...exampleData} />
+      <ProgressAnalysisTable {...data} />
     </div>
   );
 }

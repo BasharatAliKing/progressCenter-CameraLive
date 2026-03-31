@@ -12,7 +12,6 @@ export default function AddDailyReportModal({ fetchReport }) {
       try {
         const res = await fetch(`${API_URL}/camera/${params.id}`);
         const data = await res.json();
-        console.log(data?.camera?.location);
         setFormData({
           ...formData,
           project_name: data?.camera?.location || "",

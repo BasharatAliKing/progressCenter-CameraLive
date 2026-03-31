@@ -69,7 +69,6 @@ function DailyProgressReport() {
       <div className="p-4 text-center text-lg font-bold">Loading report...</div>
     );
   }
-
   return (
     <div className="p-4">
      {userData.role === 'admin' && (
@@ -105,7 +104,8 @@ function DailyProgressReport() {
             contractor={report?.contractor}
             consultant={report?.consultant}
             project={report?.project_name}
-            plotNo={report?.project_id}
+            elapsed_date={report?.elapsed_date}
+            remaining_days={report?.remaining_days}
             reportNo={report?.report_no}
             monthNo={report?.month}
             weekNo={report?.week_no}
@@ -176,16 +176,12 @@ function DailyProgressReport() {
               />
             )
           }
-          <div>
-            <OverallProgress
-              programId={report?.project_id}
-              currentPeriodData={report?.progressSCurve && report?.progressSCurve.map(s => ({
-                month: s.month,
-                planned: parseFloat(s.planned),
-                actual: parseFloat(s.actual),
-              }))}
-            />
-          </div>
+            <>
+             <OverallProgress
+                data={report}
+              />
+            </>
+          
           <TopIssuesTable
             issues={report?.topIssues && report?.topIssues.map(i => ({
               issue: i.issue,

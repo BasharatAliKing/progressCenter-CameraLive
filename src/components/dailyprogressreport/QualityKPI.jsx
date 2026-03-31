@@ -9,7 +9,6 @@ import {
 } from "recharts";
 
 const EngineeringQualityKPIs = (data) => {
-  console.log(data.data);
   const engineeringData = data.data;
   const groupedByKpi = engineeringData?.reduce((acc, item) => {
     if (!acc[item.kpi_name]) {
