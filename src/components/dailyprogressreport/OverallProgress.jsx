@@ -1,6 +1,5 @@
 const ProgressAnalysisTable = (data) => {
-  const mainData=data.data
- console.log(data.data);
+  const mainData = data.data;
   return (
     <div className="w-full max-w-5*1 mx-auto bg-gray-200 shadow-lg rounded-lg overflow-hidden">
       {/* Header */}
@@ -20,7 +19,7 @@ const ProgressAnalysisTable = (data) => {
                 Overall Schedule Performance % (1)
               </div>
               <div className="text-lg font-bold">
-               {mainData?.overall_schedule_performance_percentage || '0%'}
+                {mainData?.overall_schedule_performance_percentage || "0%"}
               </div>
             </td>
             <td className="border border-gray-400 p-3 text-center font-semibold">
@@ -28,18 +27,18 @@ const ProgressAnalysisTable = (data) => {
                 Overall Activity Performance % (2)
               </div>
               <div className="text-lg font-bold">
-                {mainData?.overall_actual_performance_percentage || '0%'}
+                {mainData?.overall_actual_performance_percentage || "0%"}
               </div>
             </td>
             <td className="border border-gray-400 p-3 text-center font-semibold">
               <div className="text-sm mb-1">Variance (3) = (1-2)</div>
-              <div className="text-lg font-bold">
-                {}
-              </div>
+              <div className="text-lg font-bold">{}</div>
             </td>
             <td className="border border-gray-400 p-3 text-center font-semibold">
               <div className="text-sm mb-1">(Days) +Ahead / -Delay</div>
-              <div className="text-lg font-bold">{mainData?.overall_progress_daysAheadDelay || '0'}</div>
+              <div className="text-lg font-bold">
+                {mainData?.overall_progress_daysAheadDelay || "0"}
+              </div>
             </td>
             <td className="border border-gray-400 bg-gray-100"></td>
             <td className="border border-gray-400 bg-gray-100"></td>
@@ -96,43 +95,50 @@ const ProgressAnalysisTable = (data) => {
           </tr>
 
           {/* Data Row */}
-          {
-            mainData?.overallProgress.map((val,index)=>(
-<tr className="bg-white">
-            <td className="border border-gray-400 p-3 text-center font-semibold text-red-600">
-             {val.progress_name}
-            </td>
-            <td className="border border-gray-400 p-3 text-center">
-              {val.progress_planned_thisWeek}
-            </td>
-            <td className="border border-gray-400 p-3 text-center">
-              {val.progress_actual_thisWeek}
-            </td>
-            <td className="border border-gray-400 p-3 text-center">
-             {(
-    parseFloat(val.progress_planned_thisWeek || 0) -
-    parseFloat(val.progress_actual_thisWeek || 0)
-  ).toFixed(2)}%
-            </td>
-            <td className="border border-gray-400 p-3 text-center">
-              {val.progress_planned_lastWeek}
-            </td>
-            <td className="border border-gray-400 p-3 text-center">
-              {val.progress_actual_lastWeek}
-            </td>
-            <td className="border border-gray-400 p-3 text-center">
-              {(
-    parseFloat(val.progress_planned_lastWeek || 0) -
-    parseFloat(val.progress_actual_lastWeek || 0)
-  ).toFixed(2)}%
-            </td>
-            <td className="border border-gray-400 p-3 text-center">
-              {}
-            </td>
-          </tr>
-            ))
-          }
-          
+          {mainData?.overallProgress.map((val, index) => (
+            <tr key={index} className="bg-white">
+              <td className="border border-gray-400 p-3 text-start font-semibold text-red-600">
+                {val.progress_name}
+              </td>
+              <td className="border border-gray-400 p-3 text-center">
+                {val.progress_planned_thisWeek}
+              </td>
+              <td className="border border-gray-400 p-3 text-center">
+                {val.progress_actual_thisWeek}
+              </td>
+              <td className="border border-gray-400 p-3 text-center">
+                {(
+                  parseFloat(val.progress_planned_thisWeek || 0) -
+                  parseFloat(val.progress_actual_thisWeek || 0)
+                ).toFixed(2)}
+                %
+              </td>
+              <td className="border border-gray-400 p-3 text-center">
+                {val.progress_planned_lastWeek}
+              </td>
+              <td className="border border-gray-400 p-3 text-center">
+                {val.progress_actual_lastWeek}
+              </td>
+              <td className="border border-gray-400 p-3 text-center">
+                {(
+                  parseFloat(val.progress_planned_lastWeek || 0) -
+                  parseFloat(val.progress_actual_lastWeek || 0)
+                ).toFixed(2)}
+                %
+              </td>
+              <td className="border border-gray-400 p-3 text-center">
+                { ((
+                  parseFloat(val.progress_planned_thisWeek || 0) -
+                  parseFloat(val.progress_actual_thisWeek || 0)
+                ).toFixed(2))
+                - 
+                ((
+                  parseFloat(val.progress_planned_lastWeek || 0) -
+                  parseFloat(val.progress_actual_lastWeek || 0)
+                ).toFixed(2))}%
+              </td>
+            </tr>
+          ))}
         </tbody>
       </table>
     </div>
