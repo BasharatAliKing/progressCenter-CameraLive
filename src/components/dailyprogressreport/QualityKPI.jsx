@@ -8,96 +8,16 @@ import {
   Tooltip,
 } from "recharts";
 
-const EngineeringQualityKPIs = ({
-  // KPI Table Data
-  kpiData = [
-    {
-      category: "Prequalifications",
-      responsibility: "Contractor",
-      planned: 32,
-      released: 30,
-      performance: 93.75,
-    },
-    {
-      category: "Shop/Drawings",
-      responsibility: "Contractor",
-      planned: 428,
-      released: 442,
-      performance: 103.27,
-    },
-    {
-      category: "Material Submittals",
-      responsibility: "Contractor",
-      planned: 255,
-      released: 253,
-      performance: 99.22,
-    },
-  ],
-
-  // RFI Response Performance
-  rfiResponseData = [
-    {
-      category: "NCR",
-      responsibility: "Consultant",
-      totalIncluding: 0,
-      responseOverdue: 0,
-      performance: 100.0,
-    },
-    {
-      category: "RFI",
-      responsibility: "Consultant",
-      totalIncluding: 67,
-      responseOverdue: 0,
-      performance: 100.0,
-    },
-    {
-      category: "Submittals",
-      responsibility: "Consultant",
-      totalIncluding: 725,
-      responseOverdue: 0,
-      performance: 100.0,
-    },
-  ],
-
-  // Pie Chart Data
-  rfiStatusData = [
-    { name: "Closed RFI", value: 60, color: "#3b82f6" },
-    { name: "Under Review RFI", value: 6, color: "#ef4444" },
-    { name: "Overdue RFI", value: 1, color: "#f59e0b" },
-  ],
-
-  voStatusData = [
-    { name: "Closed Vos", value: 1, color: "#3b82f6" },
-    { name: "Under Review Vos", value: 6, color: "#ef4444" },
-  ],
-
-  shopDrawingData = [
-    { name: "Total Approved", value: 336, color: "#10b981" },
-    { name: "Total Rejected / Resubmit", value: 6, color: "#ef4444" },
-    { name: "Total Under Review", value: 25, color: "#f59e0b" },
-    { name: "Total for Info", value: 6, color: "#6b7280" },
-    { name: "Overdue Submittals", value: 50, color: "#0000FF" },
-  ],
-
-  prequalificationData = [
-    { name: "Total Approved", value: 29, color: "#10b981" },
-    { name: "Total Rejected / Resubmit", value: 1, color: "#ef4444" },
-    { name: "Total Under Review", value: 0, color: "#f59e0b" },
-    { name: "Overdue Submittals", value: 0, color: "#dc2626" },
-  ],
-
-  materialSubmittalData = [
-    { name: "Total Approved", value: 186, color: "#10b981" },
-    { name: "Total Rejected / Resubmit", value: 67, color: "#ef4444" },
-    { name: "Total Under Review", value: 0, color: "#f59e0b" },
-    { name: "Overdue Submittals", value: 0, color: "#0000FF" },
-  ],
-
-  ncrStatusData = [
-    { name: "Open NCRs", value: 1, color: "#ef4444" },
-    { name: "Closed NCRs", value: 1, color: "#10b981" },
-  ],
-}) => {
+const EngineeringQualityKPIs = (data) => {
+  console.log(data.data);
+  const engineeringData = data.data;
+  const groupedByKpi = engineeringData?.reduce((acc, item) => {
+    if (!acc[item.kpi_name]) {
+      acc[item.kpi_name] = [];
+    }
+    acc[item.kpi_name].push(item);
+    return acc;
+  }, {});
   const formatPercentage = (value) => `${value?.toFixed(2)}%`;
 
   const CustomTooltip = ({ active, payload, label }) => {
@@ -168,157 +88,92 @@ const EngineeringQualityKPIs = ({
       {/* KPI Performance Tables */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
         {/* KPI Data Submission Performance */}
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
-          <h3 className="font-bold text-sm text-gray-800 mb-3">
-            KPI Data Submission Performance
-          </h3>
-          <div className="overflow-x-auto">
-            <table className="w-full text-xs border-collapse">
-              <thead>
-                <tr className="bg-[#e7e4dc]">
-                  <th className="border border-gray-300 px-2 py-2 text-left font-semibold">
-                    Category
-                  </th>
-                  <th className="border border-gray-300 px-2 py-2 text-center font-semibold">
-                    Responsibility
-                  </th>
-                  <th className="border border-gray-300 px-2 py-2 text-center font-semibold">
-                    Planned to date (Nos)
-                  </th>
-                  <th className="border border-gray-300 px-2 py-2 text-center font-semibold">
-                    Released to date (Nos)
-                  </th>
-                  <th className="border border-gray-300 px-2 py-2 text-center font-semibold">
-                    Performance % (Actual/Planned)
-                  </th>
-                </tr>
-              </thead>
-              <tbody>
-                {kpiData.map((item, index) => (
-                  <tr
-                    key={index}
-                    className={index % 2 === 0 ? "bg-[#e7e4dc]" : "bg-white"}
-                  >
-                    <td className="border border-gray-300 px-2 py-2">
-                      {item.category}
-                    </td>
-                    <td className="border border-gray-300 px-2 py-2 text-center">
-                      {item.responsibility}
-                    </td>
-                    <td className="border border-gray-300 px-2 py-2 text-center">
-                      {item.planned}
-                    </td>
-                    <td className="border border-gray-300 px-2 py-2 text-center">
-                      {item.released}
-                    </td>
-                    <td className="border border-gray-300 px-2 py-2 text-center font-medium">
-                      {formatPercentage(item.performance)}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </div>
+        {Object.entries(groupedByKpi || {}).map(([kpiName, rows], i) => (
+          <div
+            key={i}
+            className="bg-white rounded-lg shadow-sm border border-gray-200 p-4"
+          >
+            <h3 className="font-bold text-sm text-gray-800 mb-3">{kpiName}</h3>
 
-        {/* RFI Response Performance */}
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
-          <h3 className="font-bold text-sm text-gray-800 mb-3">
-            RFI Response Performance
-          </h3>
-          <div className="overflow-x-auto">
-            <table className="w-full text-xs border-collapse">
-              <thead>
-                <tr className="bg-[#e7e4dc]">
-                  <th className="border border-gray-300 px-2 py-2 text-left font-semibold">
-                    Category
-                  </th>
-                  <th className="border border-gray-300 px-2 py-2 text-center font-semibold">
-                    Responsibility
-                  </th>
-                  <th className="border border-gray-300 px-2 py-2 text-center font-semibold">
-                    Total Including Approved (Nos)
-                  </th>
-                  <th className="border border-gray-300 px-2 py-2 text-center font-semibold">
-                    Response Overdue (Nos)
-                  </th>
-                  <th className="border border-gray-300 px-2 py-2 text-center font-semibold">
-                    Performance % (Response/Total)
-                  </th>
-                </tr>
-              </thead>
-              <tbody>
-                {rfiResponseData.map((item, index) => (
-                  <tr
-                    key={index}
-                    className={index % 2 === 0 ? "bg-[#e7e4dc]" : "bg-white"}
-                  >
-                    <td className="border border-gray-300 px-2 py-2">
-                      {item.category}
-                    </td>
-                    <td className="border border-gray-300 px-2 py-2 text-center">
-                      {item.responsibility}
-                    </td>
-                    <td className="border border-gray-300 px-2 py-2 text-center">
-                      {item.totalIncluding}
-                    </td>
-                    <td className="border border-gray-300 px-2 py-2 text-center">
-                      {item.responseOverdue}
-                    </td>
-                    <td className="border border-gray-300 px-2 py-2 text-center font-medium">
-                      {formatPercentage(item.performance)}
-                    </td>
+            <div className="overflow-x-auto">
+              <table className="w-full text-xs border-collapse">
+                <thead>
+                  <tr className="bg-[#e7e4dc]">
+                    <th className="border border-gray-300 px-2 py-2 text-left font-semibold">
+                      Category
+                    </th>
+                    <th className="border border-gray-300 px-2 py-2 text-center font-semibold">
+                      Responsibility
+                    </th>
+                    <th className="border border-gray-300 px-2 py-2 text-center font-semibold">
+                      Planned to date (Nos)
+                    </th>
+                    <th className="border border-gray-300 px-2 py-2 text-center font-semibold">
+                      Released to date (Nos)
+                    </th>
+                    <th className="border border-gray-300 px-2 py-2 text-center font-semibold">
+                      Performance % (Actual/Planned)
+                    </th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
+                </thead>
+
+                <tbody>
+                  {rows.map((item, index) => (
+                    <tr
+                      key={index}
+                      className={index % 2 === 0 ? "bg-[#e7e4dc]" : "bg-white"}
+                    >
+                      <td className="border border-gray-300 px-2 py-2">
+                        {item.category}
+                      </td>
+
+                      <td className="border border-gray-300 px-2 py-2 text-center">
+                        {item.responsibility}
+                      </td>
+
+                      <td className="border border-gray-300 px-2 py-2 text-center">
+                        {item.planned_to_date}
+                      </td>
+
+                      <td className="border border-gray-300 px-2 py-2 text-center">
+                        {item.released_to_date}
+                      </td>
+
+                      <td className="border border-gray-300 px-2 py-2 text-center font-medium">
+                        {item.performance_percentage_actual_planned}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
           </div>
-        </div>
+        ))}
       </div>
 
       {/* Pie Charts Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-        <PieChartSection
-          title="RFI STATUS"
-          data={rfiStatusData}
-          totalLabel="Total No. of RFIs Submitted"
-          totalValue="= 67"
-        />
+        {Object.entries(groupedByKpi || {}).map(([kpiName, rows]) =>
+          rows.map((item, index) => {
+            const pieData = item.status.map((s, i) => ({
+              name: s.status_name,
+              value: Number(s.status_value),
+              color: ["#0088FE", "#00C49F", "#FFBB28", "#FF8042"][i % 4],
+            }));
 
-        <PieChartSection
-          title="VO STATUS"
-          data={voStatusData}
-          totalLabel="Total No. of VOs Submitted"
-          totalValue="= 7"
-        />
+            const total = pieData.reduce((sum, v) => sum + v.value, 0);
 
-        <PieChartSection
-          title="SHOP DRAWING STATUS"
-          data={shopDrawingData}
-          totalLabel="Total No. of Shop drawing Submitted"
-          totalValue="= 367"
-        />
-
-        <PieChartSection
-          title="PREQUALIFICATION STATUS"
-          data={prequalificationData}
-          totalLabel="Total No. of Prequalification Submitted"
-          totalValue="= 30"
-        />
-
-        <PieChartSection
-          title="MATERIAL SUBMITTAL STATUS"
-          data={materialSubmittalData}
-          totalLabel="Total No. of Material Submitted"
-          totalValue="= 253"
-        />
-
-        <PieChartSection
-          title="NCR STATUS"
-          data={ncrStatusData}
-          totalLabel="Total NCR"
-          totalValue="= 2"
-        />
+            return (
+              <PieChartSection
+                key={index}
+                title={`${item.category} STATUS`}
+                data={pieData}
+                totalLabel={`Total ${item.category}`}
+                totalValue={`= ${total}`}
+              />
+            );
+          }),
+        )}
       </div>
     </div>
   );

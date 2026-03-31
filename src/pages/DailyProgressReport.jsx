@@ -26,69 +26,28 @@ function DailyProgressReport() {
   const [report, setReport] = useState(null);
   // NEW PRINT TO PDF FUNCTION - Most Reliable Method
   const printToPDF = () => {
-    const header = document.querySelector(".print-hide");
-    if (header) header.style.display = "none";
+    // Only print the .print-content section, hide everything else
     const printStyles = document.createElement("style");
     printStyles.innerHTML = `
       @media print {
-        body { margin: 0; padding: 0; background: #f8fafc; }
-        .print-hide { display: none !important; }
+        body * {
+          visibility: hidden !important;
+        }
+        .print-content, .print-content * {
+          visibility: visible !important;
+        }
         .print-content {
-          width: 100%;
-          max-width: none;
-          padding: 0;
-          margin: 0;
-          background: #f8fafc;
-        }
-        .space-y-4 > * {
-          page-break-inside: avoid;
-          margin-bottom: 24px;
-        }
-        table {
-          page-break-inside: auto;
-          background: #fff;
-          border-radius: 8px;
-          box-shadow: 0 2px 8px rgba(0,0,0,0.08);
-        }
-        tr {
-          page-break-inside: avoid;
-          page-break-after: auto;
-        }
-        h1, h2, h3 {
-          color: #1e293b;
-        }
-        .rounded-md, .rounded-lg, .rounded-2x2 {
-          border-radius: 8px !important;
-        }
-        .shadow-md, .shadow-lg {
-          box-shadow: 0 2px 8px rgba(0,0,0,0.08) !important;
-        }
-        .bg-blue-800, .bg-blue-950, .bg-blue-300, .bg-blue-200 {
-          background: #1e293b !important;
-          color: #fff !important;
-        }
-        .bg-green-200 {
-          background: #22c55e !important;
-          color: #fff !important;
-        }
-        .bg-amber-50 {
-          background: #fef3c7 !important;
-        }
-        .bg-amber-100 {
-          background: #fde68a !important;
-        }
-        .font-bold, .font-extrabold {
-          color: #1e293b !important;
-        }
-        .border {
-          border-color: #cbd5e1 !important;
+          position: absolute !important;
+          left: 0; top: 0; width: 100vw !important; min-height: 100vh !important;
+          background: #fff !important;
+          margin: 0 !important; padding: 0 !important;
+          box-shadow: none !important;
         }
       }
     `;
     document.head.appendChild(printStyles);
     setTimeout(() => {
       window.print();
-      if (header) header.style.display = "";
       document.head.removeChild(printStyles);
     }, 100);
   };
@@ -187,9 +146,9 @@ function DailyProgressReport() {
               }))}
             />
           </div>
-          <div className="py-2 rounded-2x2">
+          {/* <div className="py-2 rounded-2x2">
             <CashGraph />
-          </div>
+          </div> */}
           <ProgressSCurve
             data={report?.progressSCurve && report?.progressSCurve.map(s => ({
               month: s.month,
@@ -210,9 +169,13 @@ function DailyProgressReport() {
               difference: parseFloat(w.progress_actual_thisWeek) - parseFloat(w.progress_planned_thisWeek),
             }))}
           />
-          <EngineeringQualityKPIs
-            data={report?.engineeringQuantity}
-          />
+          {
+            report?.engineeringQuantity && (
+              <EngineeringQualityKPIs
+                data={report?.engineeringQuantity}
+              />
+            )
+          }
           <div>
             <OverallProgress
               programId={report?.project_id}

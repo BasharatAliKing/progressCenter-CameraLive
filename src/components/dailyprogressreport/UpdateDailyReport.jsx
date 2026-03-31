@@ -52,6 +52,9 @@ export default function UpdateDailyReport({ fetchReport }) {
         kpi_name: "",
         category: "",
         responsibility: "",
+        planned_to_date: "",
+        released_to_date: "",
+        performance_percentage_actual_planned: "",
         status: [{ status_name: "", status_value: "" }],
       },
     ],
@@ -291,37 +294,97 @@ export default function UpdateDailyReport({ fetchReport }) {
             {formData.engineeringQuantity.map((item, i) => (
               <div key={i} className="border p-3 mb-3 rounded relative">
                 <div className="grid grid-cols-3 gap-2 mb-2">
-                  <input
-                    placeholder="KPI Name"
-                    value={item.kpi_name}
-                    onChange={(e) => {
-                      const x = [...formData.engineeringQuantity];
-                      x[i].kpi_name = e.target.value;
-                      setFormData({ ...formData, engineeringQuantity: x });
-                    }}
-                    className="border p-2"
-                  />
-
-                  <input
-                    placeholder="Category"
-                    value={item.category}
-                    onChange={(e) => {
-                      const x = [...formData.engineeringQuantity];
-                      x[i].category = e.target.value;
-                      setFormData({ ...formData, engineeringQuantity: x });
-                    }}
-                    className="border p-2"
-                  />
-                  <input
-                    placeholder="Responsibility"
-                    value={item.responsibility}
-                    onChange={(e) => {
-                      const x = [...formData.engineeringQuantity];
-                      x[i].responsibility = e.target.value;
-                      setFormData({ ...formData, engineeringQuantity: x });
-                    }}
-                    className="border p-2"
-                  />
+                  <div className="flex flex-col gap-1">
+                    <label htmlFor="" className="font-medium text-sm">
+                      KPI Name
+                    </label>
+                    <input
+                      placeholder="KPI Name"
+                      value={item.kpi_name}
+                      onChange={(e) => {
+                        const x = [...formData.engineeringQuantity];
+                        x[i].kpi_name = e.target.value;
+                        setFormData({ ...formData, engineeringQuantity: x });
+                      }}
+                      className="border p-2"
+                    />
+                  </div>
+                  <div className="flex flex-col gap-1">
+                    <label htmlFor="" className="font-medium text-sm">
+                      Category
+                    </label>
+                    <input
+                      placeholder="Category"
+                      value={item.category}
+                      onChange={(e) => {
+                        const x = [...formData.engineeringQuantity];
+                        x[i].category = e.target.value;
+                        setFormData({ ...formData, engineeringQuantity: x });
+                      }}
+                      className="border p-2"
+                    />
+                  </div>
+                  <div className="flex flex-col gap-1">
+                    <label htmlFor="" className="font-medium text-sm">
+                      Responsibility
+                    </label>
+                    <input
+                      placeholder="Responsibility"
+                      value={item.responsibility}
+                      onChange={(e) => {
+                        const x = [...formData.engineeringQuantity];
+                        x[i].responsibility = e.target.value;
+                        setFormData({ ...formData, engineeringQuantity: x });
+                      }}
+                      className="border p-2"
+                    />
+                  </div>
+                  <div className="flex flex-col gap-1">
+                    <label htmlFor="" className="font-medium text-sm">
+                      Planned To Date
+                    </label>
+                    <input
+                      placeholder="Planned To Date"
+                      value={item.planned_to_date}
+                      onChange={(e) => {
+                        const x = [...formData.engineeringQuantity];
+                        x[i].planned_to_date = e.target.value;
+                        setFormData({ ...formData, engineeringQuantity: x });
+                      }}
+                      className="border p-2 rounded-md"
+                    />
+                  </div>
+                  <div className="flex flex-col gap-1">
+                    <label htmlFor="" className="font-medium text-sm">
+                      Released To Date
+                    </label>
+                    <input
+                      placeholder="Released To Date"
+                      value={item.released_to_date}
+                      onChange={(e) => {
+                        const x = [...formData.engineeringQuantity];
+                        x[i].released_to_date = e.target.value;
+                        setFormData({ ...formData, engineeringQuantity: x });
+                      }}
+                      className="border p-2 rounded-md"
+                    />
+                  </div>
+                  <div className="flex flex-col gap-1">
+                    <label htmlFor="" className="font-medium text-sm">
+                      Performance % (Actual/Planned)
+                    </label>
+                    <input
+                      placeholder="Performance % (Actual/Planned)"
+                      value={item.performance_percentage_actual_planned}
+                      onChange={(e) => {
+                        const x = [...formData.engineeringQuantity];
+                        x[i].performance_percentage_actual_planned =
+                          e.target.value;
+                        setFormData({ ...formData, engineeringQuantity: x });
+                      }}
+                      className="border p-2 rounded-md"
+                    />
+                  </div>
                 </div>
 
                 {/* STATUS */}
