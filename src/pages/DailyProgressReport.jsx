@@ -116,9 +116,9 @@ function DailyProgressReport() {
         <div className=" grid grid-cols-2 gap-4">
           <TimeDataClaims
             commencementDate={report?.commencement_date}
-            duration={report?.duration}
+           // duration={report?.duration}
             completion={report?.completion_date}
-            forecastCompletion={report?.forcast_completion_date}
+            forecastCompletion={report?.completion_date}
             eot={report?.eot_granted}
             anticipatedEot={report?.anticipated_eot}
           />

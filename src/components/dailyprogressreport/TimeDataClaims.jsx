@@ -1,13 +1,16 @@
 import React from "react";
 
 const TimeDataClaims = ({
-  commencementDate = "23-09-23",
+  commencementDate = "",
   duration = 0,
   completion = "",
   forecastCompletion = "",
   eot = 0,
   anticipatedEot = 0,
 }) => {
+  // Calculate difference in years
+ let durationYears = new Date(completion)?.getFullYear() - new Date(commencementDate)?.getFullYear();
+
   return (
     <div>
       <div className="block py-2 ">
@@ -27,7 +30,7 @@ const TimeDataClaims = ({
             </div>
            <div className="flex flex-col items-start">
               <span className="font-semibold">Duration:</span>
-              <span className="">{duration} days</span>
+              <span className="">{durationYears} {durationYears === 1 ? "year" : "years"}</span>
             </div>
             <div className="flex flex-col items-start">
               <span className="font-semibold">Completion Date:</span>

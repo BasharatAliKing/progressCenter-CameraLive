@@ -197,7 +197,7 @@ const handleSubmit = async () => {
     </div>
   ));
 };
-console.log(formData);
+
   const addRow = (arrayName, template) => {
     setFormData({
       ...formData,

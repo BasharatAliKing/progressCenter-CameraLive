@@ -252,7 +252,6 @@ export default function UpdateDailyReport({ fetchReport }) {
       [arrayName]: [...formData[arrayName], template],
     });
   };
-  console.log(formData);
   return (
     <>
       <div className="w-full ml-auto flex justify-end mb-4">
