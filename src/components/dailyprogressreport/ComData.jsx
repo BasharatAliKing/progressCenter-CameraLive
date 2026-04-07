@@ -8,6 +8,7 @@ const ComData = ({
   revisedContractValue = 0,
   costOfChanges = 0,
 }) => {
+  
   return (
     <div>
       <div className="block py-2">
