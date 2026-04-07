@@ -312,14 +312,23 @@ export default function UpdateDailyReport({ fetchReport }) {
                   >
                     {field.replace(/_/g, " ")}
                   </label>
-                  <input
-                    id={field}
-                    name={field}
-                    placeholder={field}
-                    value={formData[field]}
-                    onChange={handleChange}
-                    className="border p-2 rounded-md"
-                  />
+                  {field === "commencement_date" || field === "completion_date" ? (
+                    <input
+                      type="date"
+                      name={field}
+                      value={formData[field]}
+                      onChange={handleChange}
+                      className="border p-2 rounded-md"
+                    />
+                  ) : (
+                    <input
+                      name={field}
+                      placeholder={field}
+                      value={formData[field]}
+                      onChange={handleChange}
+                      className="border p-2 rounded-md"
+                    />
+                  )}
                 </div>
               ))}
             </div>

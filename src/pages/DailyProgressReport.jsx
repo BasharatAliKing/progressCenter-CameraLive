@@ -102,6 +102,8 @@ function DailyProgressReport() {
             contractor={report?.contractor}
             consultant={report?.consultant}
             project={report?.project_name}
+            commencement_date={report?.commencement_date}
+            completion_date={report?.completion_date}
             elapsed_date={report?.elapsed_date}
             remaining_days={report?.remaining_days}
             reportNo={report?.report_no}
