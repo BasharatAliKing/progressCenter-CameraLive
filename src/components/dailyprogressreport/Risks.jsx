@@ -1,16 +1,7 @@
 import React from "react";
 
-const MainRisksTable = ({
-  risks = [
-    {
-      riskDescription: "Post-Tension Drawings Approval by DM",
-      riskCategory: "Closed",
-      impact: "Closed",
-      riskResponse: "Risk Closed, Issued On 29-Jun-17",
-    },
-  ],
-  emptyRows = 8,
-}) => {
+const MainRisksTable = (data) => {
+  const mainData=data?.data || [];
   // Unified color function for both riskCategory and impact
   const getColorClass = (value) => {
     switch (value?.toLowerCase()) {
@@ -46,15 +37,15 @@ const MainRisksTable = ({
   };
 
   // Merge risks with empty rows
-  const allRows = [...risks];
-  for (let i = 0; i < emptyRows; i++) {
-    allRows.push({
-      riskDescription: "",
-      riskCategory: "",
-      impact: "",
-      riskResponse: "",
-    });
-  }
+  // const allRows = [...data];
+  // for (let i = 0; i < emptyRows; i++) {
+  //   allRows.push({
+  //     riskDescription: "",
+  //     riskCategory: "",
+  //     impact: "",
+  //     riskResponse: "",
+  //   });
+  // }
 
   return (
     <div className="w-full bg-[#e7e4dc] p-6 rounded-lg shadow-lg">
@@ -85,25 +76,25 @@ const MainRisksTable = ({
             </tr>
           </thead>
           <tbody>
-            {allRows.map((item, index) => (
+            {mainData.map((item, index) => (
               <tr
                 key={index}
                 className={index % 2 === 0 ? "bg-gray-100" : "bg-white"}
               >
                 <td className="border border-gray-300 px-4 py-3 text-gray-800 min-h-[40px]">
-                  {item.riskDescription}
+                  {item.risk_description}
                 </td>
                 <td className="border border-gray-300 px-4 py-3 text-center">
                   {getBadge(
-                    item.riskCategory,
-                    getColorClass(item.riskCategory)
+                    item.risk_category,
+                    getColorClass(item.risk_category)
                   )}
                 </td>
                 <td className="border border-gray-300 px-4 py-3 text-center">
-                  {getBadge(item.impact, getColorClass(item.impact))}
+                  {getBadge(item.risk_impact, getColorClass(item.risk_impact))}
                 </td>
                 <td className="border border-gray-300 px-4 py-3 text-gray-700">
-                  {item.riskResponse}
+                  {item.risk_response}
                 </td>
               </tr>
             ))}
@@ -112,20 +103,20 @@ const MainRisksTable = ({
       </div>
 
       {/* Summary */}
-      {risks.length > 0 && (
+      {mainData.length > 0 && (
         <div className="mt-4 flex flex-wrap gap-4 text-sm">
           {/* Total Risks */}
           <div className="bg-white px-3 py-2 rounded border">
             <span className="font-medium text-gray-600">Total Risks: </span>
-            <span className="font-bold text-gray-800">{risks.length}</span>
+            <span className="font-bold text-gray-800">{mainData?.length}</span>
           </div>
 
           {/* Risk Category Summary */}
           {["Critical", "High", "Medium", "Low", "Closed", "Open"].map(
             (category) => {
-              const count = risks.filter(
+              const count = mainData.filter(
                 (risk) =>
-                  risk.riskCategory?.toLowerCase() === category.toLowerCase()
+                  risk.risk_category?.toLowerCase() === category.toLowerCase()
               ).length;
               if (count > 0) {
                 return (
@@ -160,8 +151,8 @@ const MainRisksTable = ({
 
           {/* Impact Summary */}
           {["Critical", "High", "Medium", "Low"].map((impact) => {
-            const count = risks.filter(
-              (risk) => risk.impact?.toLowerCase() === impact.toLowerCase()
+            const count = mainData.filter(
+              (risk) => risk.risk_impact?.toLowerCase() === impact.toLowerCase()
             ).length;
             if (count > 0) {
               return (

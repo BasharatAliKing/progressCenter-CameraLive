@@ -77,7 +77,7 @@ const ManpowerHistogram = (data) => {
           <ResponsiveContainer width="100%" height="100%">
             <BarChart
               data={chartData}
-              margin={{ 
+              margin={{
                 top: 20,
                 right: 30,
                 left: 20,
@@ -94,17 +94,9 @@ const ManpowerHistogram = (data) => {
 
               <Legend />
 
-              <Bar
-                dataKey="plannedManpower"
-                name="Planned"
-                fill="#3b82f6"
-              />
+              <Bar dataKey="plannedManpower" name="Planned" fill="#3b82f6" />
 
-              <Bar
-                dataKey="actualManpower"
-                name="Actual"
-                fill="#dc2626"
-              />
+              <Bar dataKey="actualManpower" name="Actual" fill="#dc2626" />
             </BarChart>
           </ResponsiveContainer>
         </div>

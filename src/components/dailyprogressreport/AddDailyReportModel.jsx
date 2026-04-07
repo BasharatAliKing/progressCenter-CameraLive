@@ -107,41 +107,70 @@ export default function AddDailyReportModal({ fetchReport }) {
       },
     ],
 
-    progressPhotos: [{ img_name: "", img_path: "" }],
+    progressPhotos: [{ img_name: "", img_path: null }],
   });
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-  const handleSubmit = async () => {
-    const res = await fetch(`${API_URL}/dailyprogress`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(formData),
-    });
-    const data = await res.json();
-    console.log("Response:", data);
-    alert("Report added successfully!");
-    setOpen(false);
-    // fetchReport();
-  };
+const handleSubmit = async () => {
+  const form = new FormData();
+  Object.keys(formData).forEach((key) => {
+    if (key !== "progressPhotos") {
+      const value = formData[key];
+      if (typeof value === "object") {
+        form.append(key, JSON.stringify(value)); // only for arrays/objects
+      } else {
+        form.append(key, value); // plain strings go as-is
+      }
+    }
+  });
+
+  formData.progressPhotos.forEach((photo) => {
+    if (photo.img_path) {
+      form.append("progressPhotos", photo.img_path); // file
+      form.append("progressPhotos", photo.img_name); // separate name field if needed
+    }
+  });
+
+  const res = await fetch(`${API_URL}/dailyprogress`, {
+    method: "POST",
+    body: form,
+  });
+
+  const data = await res.json();
+  console.log("Response:", data);
+
+  alert("Report added successfully!");
+  setOpen(false);
+};
 
   // reusable array renderer
   const renderArrayInput = (arrayName, fields) => {
-    return formData[arrayName].map((item, i) => (
-      <div
-        key={i}
-        className="grid grid-cols-4 gap-2 mb-2 border p-2 relative rounded"
-      >
-        {fields.map((field) => (
-          <div key={field} className="flex flex-col mb-2">
-            <label
-              className="mb-1 font-semibold text-sm capitalize"
-              htmlFor={field}
-            >
-              {field.replace(/_/g, " ")}
-            </label>
+  return formData[arrayName].map((item, i) => (
+    <div
+      key={i}
+      className="grid grid-cols-4 gap-2 mb-2 border p-2 relative rounded"
+    >
+      {fields.map((field) => (
+        <div key={field} className="flex flex-col mb-2">
+          <label className="mb-1 font-semibold text-sm capitalize">
+            {field.replace(/_/g, " ")}
+          </label>
+
+          {arrayName === "progressPhotos" && field === "img_path" ? (
+            <input
+              type="file"
+              accept="image/*"
+              onChange={(e) => {
+                const x = [...formData[arrayName]];
+                x[i][field] = e.target.files[0];
+                setFormData({ ...formData, [arrayName]: x });
+              }}
+              className="border p-2 rounded-md"
+            />
+          ) : (
             <input
               placeholder={field}
               value={item[field]}
@@ -152,22 +181,23 @@ export default function AddDailyReportModal({ fetchReport }) {
               }}
               className="border p-2 rounded-md"
             />
-          </div>
-        ))}
+          )}
+        </div>
+      ))}
 
-        <button
-          onClick={() => {
-            const x = formData[arrayName].filter((_, index) => index !== i);
-            setFormData({ ...formData, [arrayName]: x });
-          }}
-          className="bg-red-500 text-white absolute top-1 right-1 p-1 rounded-full"
-        >
-          <CgClose />
-        </button>
-      </div>
-    ));
-  };
-
+      <button
+        onClick={() => {
+          const x = formData[arrayName].filter((_, index) => index !== i);
+          setFormData({ ...formData, [arrayName]: x });
+        }}
+        className="bg-red-500 text-white absolute top-1 right-1 p-1 rounded-full"
+      >
+        <CgClose />
+      </button>
+    </div>
+  ));
+};
+console.log(formData);
   const addRow = (arrayName, template) => {
     setFormData({
       ...formData,

@@ -68,7 +68,6 @@ function DailyProgressReport() {
       <div className="p-4 text-center text-lg font-bold">Loading report...</div>
     );
   }
-  console.log(report);
   return (
     <div className="p-4">
       {userData.role === "admin" &&
@@ -206,23 +205,15 @@ function DailyProgressReport() {
           </>
           <div>
             <RisksTable
-              risks={
-                report?.mainRisks &&
-                report?.mainRisks.map((r) => ({
-                  description: r.risk_description,
-                  category: r.risk_category,
-                  impact: r.risk_impact,
-                  mitigation: r.risk_response,
-                }))
-              }
+              data={report?.mainRisks}
             />
             <Photos photos={report?.progressPhotos} />
-            <div>
+            {/* <div>
               <WeeklyProgressTasks
                 weeks={report?.weeklyProgress || []}
                 emptyRowsPerSection={5}
               />
-            </div>
+            </div> */}
           </div>
         </div>
       </div>

@@ -3,7 +3,7 @@ import { CgClose } from "react-icons/cg";
 import { useParams } from "react-router-dom";
 
 const API_URL = import.meta.env.VITE_API_URL;
-
+const VITE_IMAGE_PATH = import.meta.env.VITE_IMAGE_PATH;
 export default function UpdateDailyReport({ fetchReport }) {
   const [open, setOpen] = useState(false);
   const params = useParams();
@@ -120,15 +120,44 @@ export default function UpdateDailyReport({ fetchReport }) {
     getReportDataByProjectId();
   }, []);
   const handleSubmit = async () => {
+    const form = new FormData();
+
+    Object.keys(formData).forEach((key) => {
+      if (key !== "progressPhotos") {
+        const value = formData[key];
+        if (typeof value === "object") {
+          form.append(key, JSON.stringify(value));
+        } else {
+          form.append(key, value);
+        }
+      }
+    });
+    formData.progressPhotos.forEach((photo) => {
+      if (photo.img_path instanceof File) {
+        form.append("progressPhotos", photo.img_path);
+        form.append("progressPhotos", photo.img_name);
+      } else {
+        // existing image keep
+        form.append(
+          "existingPhotos",
+          JSON.stringify({
+            img_name: photo.img_name,
+            img_path: photo.img_path,
+          }),
+        );
+      }
+    });
+
     const res = await fetch(
       `${API_URL}/dailyprogress/${formData._id || params.id}`,
       {
         method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(formData),
+        body: form,
       },
     );
+
     const data = await res.json();
+
     alert("Report updated successfully!");
     setOpen(false);
     if (fetchReport) fetchReport();
@@ -143,22 +172,64 @@ export default function UpdateDailyReport({ fetchReport }) {
       >
         {fields.map((field) => (
           <div key={field} className="flex flex-col mb-2">
-            <label
-              className="mb-1 font-semibold text-sm capitalize"
-              htmlFor={field}
-            >
+            <label className="mb-1 font-semibold text-sm capitalize">
               {field.replace(/_/g, " ")}
             </label>
-            <input
-              placeholder={field}
-              value={item[field]}
-              onChange={(e) => {
-                const x = [...formData[arrayName]];
-                x[i][field] = e.target.value;
-                setFormData({ ...formData, [arrayName]: x });
-              }}
-              className="border p-2 rounded-md"
-            />
+
+            {arrayName === "progressPhotos" && field === "img_path" ? (
+              <div>
+                {/* show old or new image */}
+                {item.img_path && (
+                  <img
+                    src={
+                      item.img_path instanceof File
+                        ? URL.createObjectURL(item.img_path)
+                        : `${VITE_IMAGE_PATH}${item.img_path}`
+                    }
+                    alt=""
+                    className="w-32 h-20 object-cover border mb-2"
+                  />
+                )}
+
+                {/* choose new image */}
+                <input
+                  type="file"
+                  accept="image/*"
+                  onChange={(e) => {
+                    const x = [...formData[arrayName]];
+                    x[i][field] = e.target.files[0];
+                    setFormData({ ...formData, [arrayName]: x });
+                  }}
+                  className="border p-2 rounded-md"
+                />
+
+                {/* delete image */}
+                {item.img_path && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const x = [...formData[arrayName]];
+                      x[i].img_path = "";
+                      setFormData({ ...formData, [arrayName]: x });
+                    }}
+                    className="bg-red-500 text-white px-2 py-1 mt-1"
+                  >
+                    Delete
+                  </button>
+                )}
+              </div>
+            ) : (
+              <input
+                placeholder={field}
+                value={item[field]}
+                onChange={(e) => {
+                  const x = [...formData[arrayName]];
+                  x[i][field] = e.target.value;
+                  setFormData({ ...formData, [arrayName]: x });
+                }}
+                className="border p-2 rounded-md"
+              />
+            )}
           </div>
         ))}
 
@@ -181,7 +252,7 @@ export default function UpdateDailyReport({ fetchReport }) {
       [arrayName]: [...formData[arrayName], template],
     });
   };
-
+  console.log(formData);
   return (
     <>
       <div className="w-full ml-auto flex justify-end mb-4">
