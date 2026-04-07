@@ -9,8 +9,21 @@ const TimeDataClaims = ({
   anticipatedEot = 0,
 }) => {
   // Calculate difference in years
- let durationYears = new Date(completion)?.getFullYear() - new Date(commencementDate)?.getFullYear();
+ const start = new Date(commencementDate);
+const end = new Date(completion);
 
+let years = end.getFullYear() - start.getFullYear();
+let months = end.getMonth() - start.getMonth();
+
+// adjust if months negative
+if (months < 0) {
+  years--;
+  months += 12;
+}
+
+const durationTotal = `${years} ${years=== 1 ? 'Year':'Years'} ${months === 0 ? '' : months} ${months === 1 ? 'Month': months === 0 ? '' : 'Months'}`;
+
+console.log(duration);
   return (
     <div>
       <div className="block py-2 ">
@@ -30,7 +43,7 @@ const TimeDataClaims = ({
             </div>
            <div className="flex flex-col items-start">
               <span className="font-semibold">Duration:</span>
-              <span className="">{durationYears} {durationYears === 1 ? "year" : "years"}</span>
+              <span className="">{durationTotal}</span>
             </div>
             <div className="flex flex-col items-start">
               <span className="font-semibold">Completion Date:</span>
