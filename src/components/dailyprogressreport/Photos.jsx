@@ -25,28 +25,37 @@ const Photos = ({ photos = [] }) => {
         <h2 className="text-lg font-bold text-center">Progress Photos</h2>
       </div>
       <div className="grid grid-cols-1 md:grid-cols-3 gap-2 px-4">
-        {displayPhotos.map((photo, index) => (
+    {
+      photos.length === 0 ? (
+        <div className="col-span-1 md:col-span-3 text-center text-gray-500">
+          No photos available for this report.
+        </div>
+      ):
+      (
+            displayPhotos.map((photo, index) => (
           <div key={index} className="bg-gray-50 rounded overflow-hidden">
             <div className="relative h-48">
               <img
                 src={`${VITE_IMAGE_PATH}${photo.img_path}`}
                 alt={photo.alt}
                 className="w-full h-full object-cover"
-                // onError={(e) => {
-                //   e.target.parentElement.innerHTML = `
-                //     <div class="flex items-center justify-center h-full bg-gray-200">
-                //       <div class="text-center text-gray-500">
-                //         <div class="text-2xl">📷</div>
-                //         <div class="text-sm">Photo ${index + 1}</div>
-                //       </div>
-                //     </div>
-                //   `;
-                // }}
+                onError={(e) => {
+                  e.target.parentElement.innerHTML = `
+                    <div class="flex items-center justify-center h-full bg-gray-200">
+                      <div class="text-center text-gray-500">
+                        <div class="text-2xl">📷</div>
+                        <div class="text-sm">Photo ${index + 1}</div>
+                      </div>
+                    </div>
+                  `;
+                }}
               />
             </div>
              <div className="p-1 text-sm text-center">{photo.img_name}</div>
           </div>
-        ))}
+        ))
+      )
+    }
       </div>
     </div>
   );
