@@ -11,6 +11,7 @@ const ComData = ({
   
   return (
     <div>
+      
       <div className="block py-2">
         <div className="block bg-primary rounded-md p-2 w-full">
           <h1 className="text-center text-white font-bold">Commercial Data</h1>
@@ -49,6 +50,7 @@ const ComData = ({
           </div>
         </div>
       </div>
+
     </div>
   );
 };

@@ -21,7 +21,7 @@ if (months < 0) {
   months += 12;
 }
 
-const durationTotal = `${years} ${years=== 1 ? 'Year':'Years'} ${months === 0 ? '' : months} ${months === 1 ? 'Month': months === 0 ? '' : 'Months'}`;
+const durationTotal = `${years===0 ? '' : years} ${years=== 1 ? 'Year': years ===0 ? '':'Years'} ${months === 0 ? '' : months} ${months === 1 ? 'Month': months === 0 ? '' : 'Months'}`;
 
 console.log(duration);
   return (

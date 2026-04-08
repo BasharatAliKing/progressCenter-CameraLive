@@ -4,7 +4,7 @@ import { useParams } from "react-router-dom";
 
 const API_URL = import.meta.env.VITE_API_URL;
 const VITE_IMAGE_PATH = import.meta.env.VITE_IMAGE_PATH;
-export default function UpdateDailyReport({ fetchReport }) {
+export default function UpdateDailyReport({ fetchReport , setReloadAfterUpdate}) {
   const [open, setOpen] = useState(false);
   const params = useParams();
   const [formData, setFormData] = useState({
@@ -160,6 +160,8 @@ export default function UpdateDailyReport({ fetchReport }) {
 
     alert("Report updated successfully!");
     setOpen(false);
+    setReloadAfterUpdate(prev=>!prev);
+     getReportDataByProjectId();
     if (fetchReport) fetchReport();
   };
 
@@ -203,20 +205,7 @@ export default function UpdateDailyReport({ fetchReport }) {
                   className="border p-2 rounded-md"
                 />
 
-                {/* delete image */}
-                {item.img_path && (
-                  <button
-                    type="button"
-                    onClick={() => {
-                      const x = [...formData[arrayName]];
-                      x[i].img_path = "";
-                      setFormData({ ...formData, [arrayName]: x });
-                    }}
-                    className="bg-red-500 text-white px-2 py-1 mt-1"
-                  >
-                    Delete
-                  </button>
-                )}
+               
               </div>
             ) : (
               <input

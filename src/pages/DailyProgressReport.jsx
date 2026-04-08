@@ -23,6 +23,7 @@ function DailyProgressReport() {
   const { id } = useParams();
   const dashboardRef = useRef();
   const userData = getUserData();
+  const [reloadAfterUpdate,setReloadAfterUpdate]=useState(false);
   const [report, setReport] = useState(null);
   // NEW PRINT TO PDF FUNCTION - Most Reliable Method
   const printToPDF = () => {
@@ -62,7 +63,8 @@ function DailyProgressReport() {
   };
   useEffect(() => {
     fetchReport();
-  }, []);
+  }, [reloadAfterUpdate]);
+
   if (!report && userData?.role !== "admin") {
     return (
       <div className="p-4 text-center text-lg font-bold">Loading report...</div>
@@ -71,7 +73,7 @@ function DailyProgressReport() {
   return (
     <div className="p-4">
       {userData.role === "admin" &&
-        (!report ? <AddDailyReportModal /> : <UpdateDailyReport />)}
+        (!report ? <AddDailyReportModal /> : <UpdateDailyReport setReloadAfterUpdate={setReloadAfterUpdate} />)}
 
       {/* Header with download button */}
       <div className="flex justify-between items-center bg-primary rounded-md py-4 px-6 mb-6 shadow-lg print-hide">
