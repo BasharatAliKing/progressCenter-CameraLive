@@ -55,11 +55,11 @@ console.log(duration);
             </div>
             <div className="flex flex-col items-start">
               <span className="font-semibold">EOT Granted:</span>
-              <span className="">{eot} days</span>
+              <span className="">{eot === "" ? '0': eot} days</span>
             </div>
            <div className="flex flex-col items-start">
               <span className="font-semibold">Anticipated EOT:</span>
-              <span className="">{anticipatedEot} days</span>
+              <span className="">{anticipatedEot === "" ? '0': anticipatedEot} days</span>
             </div>
           </div>
         </div>

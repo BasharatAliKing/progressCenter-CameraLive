@@ -23,29 +23,29 @@ const ComData = ({
           <div className="grid grid-cols-2 gap-4">
            <div className="flex flex-col items-start">
               <span className="font-semibold">Contract Value:</span>
-              <span className="">{contractValue}</span>
+              <span className="">{contractValue === "" ? '0': contractValue}</span>
             </div>
           <div className="flex flex-col items-start">
               <span className="font-semibold">Confirmed Variations</span>
-              <span className="">{confirmedVariations} days</span>
+              <span className="">{confirmedVariations === "" ? '0': confirmedVariations} days</span>
             </div>
            <div className="flex flex-col items-start">
               <span className="font-semibold">Revised Contract Value:</span>
-              <span className="">{revisedContractValue}</span>
+              <span className="">{revisedContractValue === "" ? '0': revisedContractValue}</span>
             </div>
            <div className="flex flex-col items-start">
               <span className="font-semibold">
                 Cumullative Percentage Certified:
               </span>
-              <span className="">{cumulativePercentage}</span>
-            </div>
+              <span className="">{cumulativePercentage === "" ? '0': cumulativePercentage}</span>
+            </div>  
            <div className="flex flex-col items-start">
               <span className="font-semibold">Certified to Date:</span>
-              <span className="">{certifiedToDate}</span>
+              <span className="">{certifiedToDate === "" ? '0': certifiedToDate}</span>
             </div>
             <div className="flex flex-col items-start">
               <span className="font-semibold">Cost of Changes:</span>
-              <span className="">{costOfChanges}</span>
+              <span className="">{costOfChanges === "" ? '0': costOfChanges}</span>
             </div>
           </div>
         </div>
