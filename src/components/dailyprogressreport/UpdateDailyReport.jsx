@@ -94,7 +94,7 @@ export default function UpdateDailyReport({ fetchReport , setReloadAfterUpdate})
 
     progressPhotos: [{ img_name: "", img_path: "" }],
   });
-
+const [activeTab, setActiveTab] = useState("baseline");
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
@@ -264,8 +264,36 @@ export default function UpdateDailyReport({ fetchReport , setReloadAfterUpdate})
                 <CgClose />
               </button>
             </div>
+            <div className="flex flex-wrap gap-2 mb-4 sticky top-0 bg-white z-10 pb-2">
+  {[
+    {label:"Basic Info", key:"basicInfo"},
+    { label: "Baseline", key: "baseline" },
+    { label: "Progress S Curve", key: "progressSCurve" },
+    { label: "Engineering Quantity", key: "engineering" },
+    { label: "Overall Progress", key: "overallProgress" },
+    { label: "Top Issues", key: "topIssues" },
+    { label: "Manpower", key: "manPowerHistogram" },
+    { label: "Main Risks", key: "mainRisks" },
+    { label: "Progress Photos", key: "progressPhotos" },
+  ].map((tab) => (
+    <button
+      key={tab.key}
+      onClick={() => setActiveTab(tab.key)}
+       className={`p-2 text-sm whitespace-nowrap cursor-pointer border-b-2 font-medium transition-all
+        ${
+          activeTab === tab.key
+            ? "border-primary text-primary bg-[#8615171c]"
+            : "border-transparent text-gray-600 hover:text-primary hover:border-primary"
+        }`}
+    >
+      {tab.label}
+    </button>
+  ))}
+</div>
             {/* BASIC INFO */}
-            <div className="grid grid-cols-4 gap-2">
+          {
+            activeTab === "basicInfo" && (
+                <div className="grid grid-cols-4 gap-2">
               {[
                 // "employer",
                 // "contractor",
@@ -319,8 +347,11 @@ export default function UpdateDailyReport({ fetchReport , setReloadAfterUpdate})
                   )}
                 </div>
               ))}
-            </div>
+            </div>)
+          }
             {/* BASELINE */}
+            {activeTab === "baseline" && (
+<>
             <h2 className="font-bold mt-6">Baseline</h2>
             {renderArrayInput("baseline", [
               "recovery_programe_comparison",
@@ -345,7 +376,11 @@ export default function UpdateDailyReport({ fetchReport , setReloadAfterUpdate})
             >
               + Add Baseline
             </button>
+            </>
+            )}
             {/* Progress S Curve */}
+            {activeTab === "progressSCurve" && (
+<>
             <h2 className="font-bold mt-6">Progress S Curve</h2>{" "}
             {renderArrayInput("progressSCurve", ["month", "planned", "actual"])}{" "}
             <button
@@ -357,7 +392,11 @@ export default function UpdateDailyReport({ fetchReport , setReloadAfterUpdate})
               {" "}
               + Add Row{" "}
             </button>
+            </>
+)}
             {/* ENGINEERING QUANTITY */}
+            {activeTab === "engineering" && (
+<>
             <h2 className="font-bold mt-6">Engineering Quantity</h2>
             {formData.engineeringQuantity.map((item, i) => (
               <div key={i} className="border p-3 mb-3 rounded relative">
@@ -554,6 +593,9 @@ export default function UpdateDailyReport({ fetchReport , setReloadAfterUpdate})
             >
               + Add Engineering
             </button>
+</>)}
+ {activeTab === "overallProgress" && (
+          <>
             <h2 className="font-bold mt-6">Overall Progress</h2>{" "}
             {renderArrayInput("overallProgress", [
               "progress_name",
@@ -577,6 +619,10 @@ export default function UpdateDailyReport({ fetchReport , setReloadAfterUpdate})
               {" "}
               + Add Progress{" "}
             </button>{" "}
+          </>
+            )}
+              {activeTab === "topIssues" && (
+                <>
             <h2 className="font-bold mt-6">Top Issues</h2>{" "}
             {renderArrayInput("topIssues", [
               "issue",
@@ -600,6 +646,10 @@ export default function UpdateDailyReport({ fetchReport , setReloadAfterUpdate})
               {" "}
               + Add Issue{" "}
             </button>{" "}
+            </>
+              )}
+              {activeTab === "manPowerHistogram" && (
+                <>
             <h2 className="font-bold mt-6">Man Power Histogram</h2>{" "}
             {renderArrayInput("manPowerHistogram", [
               "manpower_month",
@@ -619,6 +669,10 @@ export default function UpdateDailyReport({ fetchReport , setReloadAfterUpdate})
               {" "}
               + Add Row{" "}
             </button>{" "}
+            </>
+              )}
+              {activeTab === "mainRisks" && (
+                 <>
             <h2 className="font-bold mt-6">Main Risks</h2>{" "}
             {renderArrayInput("mainRisks", [
               "risk_description",
@@ -640,6 +694,10 @@ export default function UpdateDailyReport({ fetchReport , setReloadAfterUpdate})
               {" "}
               + Add Risk{" "}
             </button>{" "}
+            </>
+              )}
+              {activeTab === "progressPhotos" && (
+                  <>
             <h2 className="font-bold mt-6">Progress Photos</h2>{" "}
             {renderArrayInput("progressPhotos", ["img_name", "img_path"])}{" "}
             <button
@@ -651,11 +709,13 @@ export default function UpdateDailyReport({ fetchReport , setReloadAfterUpdate})
               {" "}
               + Add Photo{" "}
             </button>
+            </>
+              )}
             {/* SUBMIT */}
             <div className="mt-6">
               <button
                 onClick={handleSubmit}
-                className="bg-blue-600 cursor-pointer text-white px-6 py-2 rounded"
+                className="bg-primary cursor-pointer font-medium text-white px-6 py-2 rounded"
               >
                 Update Report
               </button>
