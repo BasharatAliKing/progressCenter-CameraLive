@@ -99,8 +99,29 @@ export default function OverAllProgress() {
         console.error("Error fetching cameras:", error);
       }
     };
+    const fetchLatestAQI = async () => {
+  try {
+    const res = await fetch(`${API_URL}/aqi`);
+    const data = await res.json();
+    // Handle different response formats
+    const list = Array.isArray(data.aqi)
+      ? data.aqi
+      : data?.aqi || data?.results || data?.items || [];
+    if (list.length > 0) {
+      // Sort latest first
+      const sorted = [...list].sort(
+        (a, b) => new Date(b.createdAt) - new Date(a.createdAt)
+      );
+       // Set latest AQI
+      setAqiLatest(sorted[0]);
+    }
+  } catch (error) {
+    console.error("Error fetching AQI:", error);
+  }
+};
     useEffect(()=>{
       fetchCameras();
+      fetchLatestAQI();
     },[]);
 
     // Build last 5 hours time-series from AQI readings
@@ -171,16 +192,17 @@ const handleExportAQI = async () => {
   setExportError('')
   setExportLoading(true)
   try {
-    const res = await fetch('/aqi', {
+    const res = await fetch(`${API_URL}/aqi`, {
       cache: 'no-store',
       headers: { Accept: 'application/json' },
     })
     if (!res.ok) {
       throw new Error(`Request failed: ${res.status} ${res.statusText}`)
     }
-    const text = await res.text()
+    const text = await res.text();
+    console.log(text); 
     if (text.trim().startsWith('<')) throw new Error('Server returned HTML instead of JSON')
-    const json = JSON.parse(text)
+    const json = JSON.parse(text);
     const data = Array.isArray(json) ? json : (json?.data || json?.results || json?.items || [])
     if (!Array.isArray(data) || data.length === 0) throw new Error('No data returned from API')
 
