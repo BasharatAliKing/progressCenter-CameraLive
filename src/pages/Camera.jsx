@@ -10,7 +10,7 @@ import DailyProgressReport from "./DailyProgressReport";
 const Camera = () => {
   const [view, setView] = useState(0);
   return (
-    <div className='flex min-h-[calc(100vh-56px)] py-5 pb-0 flex-col gap-5 bg-[url("/Sunrise.jpg")] bg-no-repeat bg-center bg-cover'>
+    <div className='flex min-h-[calc(100vh-56px)] py-5 pb-0 flex-col gap-5 bg-[url("/Sunrise.jpg")] bg-no-repeat bg-center bg-fixed bg-cover'>
       <div className="flex gap-5 mt-2 px-5">
         <button
           onClick={(e) => {
