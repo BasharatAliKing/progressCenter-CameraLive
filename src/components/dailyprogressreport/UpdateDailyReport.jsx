@@ -706,8 +706,7 @@ const [activeTab, setActiveTab] = useState("baseline");
               }
               className="bg-green-600 text-white px-3 py-1"
             >
-              {" "}
-              + Add Photo{" "}
+              + Add Photo
             </button>
             </>
               )}

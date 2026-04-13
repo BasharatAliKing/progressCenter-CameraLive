@@ -75,7 +75,7 @@ export default function Home() {
   }, []);
   return (
     <div
-      className="min-h-[calc(100vh-56px)] bg-cover bg-center"
+      className="min-h-[calc(100vh-56px)] bg-cover bg-fixed bg-center"
       style={{
         backgroundImage: "url('Sunrise.jpg')",
       }}
@@ -179,6 +179,7 @@ export default function Home() {
             </Link>
           ))}
         </div>
+      
       </div>
     </div>
   );
