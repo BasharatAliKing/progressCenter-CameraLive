@@ -51,7 +51,6 @@ export default function Home() {
         const res = await fetch(`${API_URL}/camera`);
         const data = await res.json();
        let camerasToShow = data.cameras;
-      console.log(camerasToShow);
        // 🔒 If user is NOT admin, filter by assigned cameras
        if (userData?.role !== "admin") {
         const cameraIdSet = new Set(userData.cameras.map(String));
