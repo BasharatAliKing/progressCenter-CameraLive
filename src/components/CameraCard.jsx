@@ -90,7 +90,7 @@ const CameraCard = ({ camera, funcimg }) => {
           <img
             src={`${IMAGE_PATH}${latestImage}`}
             alt="my-img"
-            className="rounded-md h-26 cursor-pointer"
+            className="rounded-md h-26 w-full cursor-pointer"
           />
         </Link>
       </div>

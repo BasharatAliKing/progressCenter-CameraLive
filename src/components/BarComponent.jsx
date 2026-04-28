@@ -36,11 +36,11 @@ const BarComponent = () => {
        fetchCameras();
      }, []);
   return (
-    <div className="flex justify-between items-center mb-6">
+    <div className="flex flex-wrap justify-between gap-2 sm:gap-3 sm:items-center ">
       <h1 className="text-2xl font-bold text-gray-800">
         All Projects <span className="text-gray-500 text-lg">({cameras.length})</span>
       </h1>
-      <div className="flex items-center gap-3">
+      <div className="flex flex-wrap items-center gap-2 sm:gap-3">
         <button className="p-2 cursor-pointer rounded-md bg-white">
           <BsGrid />
         </button>

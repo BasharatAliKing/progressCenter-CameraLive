@@ -108,7 +108,7 @@ const LiveProgress = () => {
   };
 
   return (
-    <div className="flex flex-col gap-5">
+    <div className="flex flex-col gap-5 w-full">
       {showImg && selectedCameraData ? (
         <div className="flex flex-col bg-[#00000068] fixed w-full h-screen items-center justify-center top-0 left-0 z-10">
           <h1 className="bg-white w-1/2 rounded-t-md flex items-center justify-between font-medium p-2">
@@ -129,8 +129,8 @@ const LiveProgress = () => {
           <img className="flex w-1/2" src={`${IMAGE_PATH}${selectedCameraData.image}`} alt="" />
         </div>
       ) : null}
-      <div className="flex gap-5">
-        <div className="flex flex-col gap-3 w-[250px] xl:w-[300px] bg-white h-[calc(100vh-134px)] p-5 overflow-y-auto">
+      <div className="flex gap-5 px-5 md:px-0 w-full">
+        <div className="hidden md:flex flex-col gap-3 w-[250px] xl:w-[300px] bg-white h-[calc(100vh-134px)] p-5 overflow-y-auto">
           <div className="flex flex-col gap-1">
             <h2 className="text-xs font-medium">
               <Link
@@ -198,7 +198,7 @@ const LiveProgress = () => {
             <h1 className="text-sm text-gray-500">Milestones</h1>
           </div>
         </div>
-        <div className="flex-1 flex-col gap-5 pr-5 w-full">
+        <div className="flex-1 flex-col gap-5 md:pr-5 w-full">
           {loading ? (
             <div className="flex w-full h-[70vh] items-center justify-center">
               <img
@@ -223,7 +223,7 @@ const LiveProgress = () => {
                   className="cursor-pointer bg-white text-primary p-1 rounded-md"
                 />
               </div>
-              <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 w-full">
+              <div className="grid grid-cols-1 gap-5 mb-5 md:mb-0 sm:grid-cols-2 lg:grid-cols-3 lg:grid-cols-4 w-full">
                 {locationCameras.map((camera) => (
                   <CameraCard
                     key={camera._id}

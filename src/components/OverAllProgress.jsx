@@ -438,12 +438,12 @@ export default function OverAllProgress() {
               </div>
 
               <div className="text-red-600 font-semibold">
-                Data Date:{" "}
+                Data Date:
                 {dprData?.date &&
                   new Date(dprData.date).toLocaleDateString("en-GB", {
-                    day: "2-digit",
-                    month: "short",
-                    year: "numeric",
+                    day: "2-digit", 
+                    month: "short",   
+                    year: "numeric", 
                   })}
               </div>
             </div>

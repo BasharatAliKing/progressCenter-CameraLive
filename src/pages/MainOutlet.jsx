@@ -7,7 +7,7 @@ const MainOutlet = () => {
     <div className=" w-[100%]  bg-gray-50">
       <Navbar />
       <Sidebar />
-      <div className="pt-14 pl-20 h-full">
+      <div className="pt-14 lg:pl-20 h-full">
         <Outlet/>
       </div>
     </div>

@@ -11,14 +11,14 @@ const Camera = () => {
   const [view, setView] = useState(0);
   return (
     <div className='flex min-h-[calc(100vh-56px)] py-5 pb-0 flex-col gap-5 bg-[url("/Sunrise.jpg")] bg-no-repeat bg-center bg-fixed bg-cover'>
-      <div className="flex gap-5 mt-2 px-5">
+      <div className="overflow-auto flex gap-5 mt-2 px-5">
         <button
           onClick={(e) => {
             setView(0);
           }}
           className={`flex cursor-pointer ${
             view === 0 ? "text-primary border-b-2 pb-1" : "text-secondary"
-          } itemx-center justify-center gap-1 font-medium text-sm md:text-base `}
+          } itemx-center justify-center gap-1 font-medium whitespace-nowrap text-sm md:text-base `}
         >
           <Cctv size="20" /> Live Progress
         </button>
@@ -28,7 +28,7 @@ const Camera = () => {
           }}
           className={`flex cursor-pointer ${
             view === 1 ? "text-primary border-b-2 pb-1" : "text-secondary"
-          } itemx-center justify-center gap-1 font-medium text-sm md:text-base `}
+          } itemx-center justify-center gap-1 font-medium whitespace-nowrap text-sm md:text-base `}
         >
           <GiProgression size="20" /> Overall Progress
         </button>
@@ -38,7 +38,7 @@ const Camera = () => {
           }}
           className={`flex cursor-pointer ${
             view === 2 ? "text-primary border-b-2 pb-1" : "text-secondary"
-          } itemx-center justify-center gap-1 font-medium text-sm md:text-base `}
+          } itemx-center justify-center gap-1 font-medium whitespace-nowrap text-sm md:text-base `}
         >
           <GrSchedule size="20" /> Detailed Schedule
         </button>
@@ -48,7 +48,7 @@ const Camera = () => {
           }}
           className={`flex cursor-pointer ${
             view === 3 ? "text-primary border-b-2 pb-1" : "text-secondary"
-          } itemx-center justify-center gap-1 font-medium text-sm md:text-base `}
+          } itemx-center justify-center gap-1 font-medium whitespace-nowrap text-sm md:text-base `}
         >
           <GrDocumentPerformance size="20" /> Daily Progress Report 
         </button>

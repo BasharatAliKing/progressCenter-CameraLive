@@ -75,7 +75,7 @@ const Navbar = () => {
         </div>
 
         {/* Search bar */}
-        <div className="flex items-center ml-15 w-full max-w-md bg-gray-100 rounded-lg px-3 py-1.5 border border-gray-200 focus-within:ring-2 focus-within:ring-primary transition-all">
+        <div className="flex items-center ml-5 md:ml-15 w-full max-w-md bg-gray-100 rounded-lg px-3 py-1.5 border border-gray-200 focus-within:ring-2 focus-within:ring-primary transition-all">
           <Search size={18} className="text-gray-500" />
           <input
             type="text"
