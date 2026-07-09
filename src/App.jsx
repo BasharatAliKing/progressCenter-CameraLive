@@ -26,7 +26,7 @@ const App = () => {
      <Router className='font-dancing'>
       <AuthExpiryWatcher />
       <Routes>
-          <Route path="gridwall-viewer/:id" element={<GridWallViewer/>} />
+        <Route path="gridwall-viewer/:id" element={<GridWallViewer/>} />
         <Route path='/login' element={<GuestOnly><Login/></GuestOnly>} />
         <Route path='/' element={<RequireAuth><MainOutlet/></RequireAuth>} >
           <Route path='' element={<Home/>} />
@@ -44,10 +44,11 @@ const App = () => {
           <Route path="plugins" element={<Plugins/>}/>
           <Route path="plugins/:id/:pluginname" element={<PluginDashboard/>}/>
           <Route path="plugins/:id/:pluginname/:gridId" element={<GridWallsites/>}/>
-          </Route>
+        </Route>
        </Routes>
      </Router>
   )
 }
 
 export default App
+

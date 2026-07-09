@@ -18,12 +18,13 @@ import Photos from "../components/dailyprogressreport/Photos";
 import AddDailyReportModal from "../components/dailyprogressreport/AddDailyReportModel";
 import { getUserData } from "../utilities/auth";
 import UpdateDailyReport from "../components/dailyprogressreport/UpdateDailyReport";
+import HseStatistics from "../components/dailyprogressreport/HseStatistics";
 const API_URL = import.meta.env.VITE_API_URL;
 function DailyProgressReport() {
   const { id } = useParams();
   const dashboardRef = useRef();
   const userData = getUserData();
-  const [reloadAfterUpdate,setReloadAfterUpdate]=useState(false);
+  const [reloadAfterUpdate, setReloadAfterUpdate] = useState(false);
   const [report, setReport] = useState(null);
   // NEW PRINT TO PDF FUNCTION - Most Reliable Method
   const printToPDF = () => {
@@ -73,7 +74,11 @@ function DailyProgressReport() {
   return (
     <div className="p-4">
       {userData.role === "admin" &&
-        (!report ? <AddDailyReportModal /> : <UpdateDailyReport setReloadAfterUpdate={setReloadAfterUpdate} />)}
+        (!report ? (
+          <AddDailyReportModal />
+        ) : (
+          <UpdateDailyReport setReloadAfterUpdate={setReloadAfterUpdate} />
+        ))}
 
       {/* Header with download button */}
       <div className="flex justify-between items-center bg-primary rounded-md py-4 px-6 mb-6 shadow-lg print-hide">
@@ -118,7 +123,7 @@ function DailyProgressReport() {
         <div className=" grid grid-cols-2 gap-4">
           <TimeDataClaims
             commencementDate={report?.commencement_date}
-           // duration={report?.duration}
+            // duration={report?.duration}
             completion={report?.completion_date}
             forecastCompletion={report?.completion_date}
             eot={report?.eot_granted}
@@ -207,10 +212,11 @@ function DailyProgressReport() {
           <>
             <ManpowerHistogram data={report} />
           </>
+            <>
+            <HseStatistics data={report} />
+          </>
           <div>
-            <RisksTable
-              data={report?.mainRisks}
-            />
+            <RisksTable data={report?.mainRisks} />
             <Photos photos={report?.progressPhotos} />
             {/* <div>
               <WeeklyProgressTasks

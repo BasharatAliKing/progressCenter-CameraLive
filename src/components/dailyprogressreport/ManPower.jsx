@@ -18,6 +18,8 @@ const ManpowerHistogram = (data) => {
     period: item.manpower_month,
     plannedManpower: Number(item.manpower_planned),
     actualManpower: Number(item.manpower_actual),
+    variance: Number(item.manpower_actual) - Number(item.manpower_planned),
+    Remarks: item.manpower_remarks || "",
   }));
 
   return (
@@ -34,6 +36,7 @@ const ManpowerHistogram = (data) => {
           <table className="w-full border-collapse">
             <thead>
               <tr className="bg-gray-200">
+              
                 <th className="border border-gray-300 px-4 py-2 text-center font-bold">
                   MONTH
                 </th>
@@ -43,13 +46,19 @@ const ManpowerHistogram = (data) => {
                 <th className="border border-gray-300 px-4 py-2 text-center font-bold">
                   Actual
                 </th>
+                <th className="border border-gray-300 px-4 py-2 text-center font-bold">
+                  Variance
+                </th>
+                  <th className="border border-gray-300 px-4 py-2 text-center font-bold">
+                  Remarks
+                </th>
               </tr>
             </thead>
 
             <tbody>
               {mainData.map((val, index) => (
                 <tr key={index} className="bg-white">
-                  <td className="border border-gray-300 px-4 py-2 font-semibold">
+                  <td className="border border-gray-300 px-4 py-2 text-center font-semibold">
                     {val.manpower_month}
                   </td>
 
@@ -59,6 +68,12 @@ const ManpowerHistogram = (data) => {
 
                   <td className="border border-gray-300 px-4 py-2 text-center">
                     {val.manpower_actual}
+                  </td>
+                  <td className="border border-gray-300 max-w-[200px] px-4 py-2 text-center">
+                    {val.manpower_actual - val.manpower_planned || "-"}
+                  </td>
+                  <td className="border border-gray-300 max-w-[200px] px-4 py-2 text-start">
+                    {val.manpower_remarks || "-"}
                   </td>
                 </tr>
               ))}
@@ -97,6 +112,7 @@ const ManpowerHistogram = (data) => {
               <Bar dataKey="plannedManpower" name="Planned" fill="#3b82f6" />
 
               <Bar dataKey="actualManpower" name="Actual" fill="#dc2626" />
+              <Bar dataKey="variance" name="Variance" fill="#f59e0b" />
             </BarChart>
           </ResponsiveContainer>
         </div>

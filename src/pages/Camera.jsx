@@ -6,6 +6,7 @@ import LiveProgress from "../components/LiveProgress";
 import OverAllProgress from "../components/OverAllProgress";
 import DetailedSchedule from "../components/DetailedSchedule";
 import DailyProgressReport from "./DailyProgressReport";
+import MinutesOfMeeting from "./MinutesOfMeeting";
 
 const Camera = () => {
   const [view, setView] = useState(0);
@@ -52,18 +53,31 @@ const Camera = () => {
         >
           <GrDocumentPerformance size="20" /> Daily Progress Report 
         </button>
+        <button
+          onClick={(e) => {
+            setView(4);
+          }}
+          className={`flex cursor-pointer ${
+            view === 4 ? "text-primary border-b-2 pb-1" : "text-secondary"
+          } itemx-center justify-center gap-1 font-medium whitespace-nowrap text-sm md:text-base `}
+        >
+          <GrDocumentPerformance size="20" /> Minutes Of Meeting 
+        </button>
       </div>
       <div className="flex w-full">
         {view === 0 ? (
           <LiveProgress />
         ) : view === 1 ? (
           <OverAllProgress />
-        ) : view === 2 ? (
+        ) 
+        : view === 2 ? (
           <div className="mx-5 w-full overflow-y-scroll">
             <DetailedSchedule />
           </div>
-        ) : (
+        ) : view === 3 ? (
           <DailyProgressReport />
+        ) : (
+          <MinutesOfMeeting />
         )}
       </div>
     </div>

@@ -4,7 +4,7 @@ import { useParams } from "react-router-dom";
 
 const API_URL = import.meta.env.VITE_API_URL;
 
-export default function AddDailyReportModal({ fetchReport }) {
+export default function AddDailyReportModal() {
   const [open, setOpen] = useState(false);
   const params = useParams();
   useEffect(() => {
@@ -61,7 +61,13 @@ export default function AddDailyReportModal({ fetchReport }) {
     ],
 
     progressSCurve: [{ month: "", planned: "", actual: "" }],
-
+    projectProgressSchedule: [
+      {
+        wbs_name: "",
+        wbs_planned: "",
+        wbs_actual: "",
+      },
+    ],
     engineeringQuantity: [
       {
         kpi_name: "",
@@ -95,7 +101,12 @@ export default function AddDailyReportModal({ fetchReport }) {
     ],
 
     manPowerHistogram: [
-      { manpower_month: "", manpower_actual: "", manpower_planned: "" },
+      {
+        manpower_month: "",
+        manpower_actual: "",
+        manpower_planned: "",
+        manpower_remarks: "",
+      },
     ],
 
     mainRisks: [
@@ -106,7 +117,14 @@ export default function AddDailyReportModal({ fetchReport }) {
         risk_response: "",
       },
     ],
-
+    hseStatistics: [
+      {
+        hse_category: "",
+        hse_description: "",
+        hse_weekly_status: "",
+        hse_cumulative_status: "",
+      },
+    ],
     progressPhotos: [{ img_name: "", img_path: null }],
   });
 
@@ -114,89 +132,89 @@ export default function AddDailyReportModal({ fetchReport }) {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-const handleSubmit = async () => {
-  const form = new FormData();
-  Object.keys(formData).forEach((key) => {
-    if (key !== "progressPhotos") {
-      const value = formData[key];
-      if (typeof value === "object") {
-        form.append(key, JSON.stringify(value)); // only for arrays/objects
-      } else {
-        form.append(key, value); // plain strings go as-is
+  const handleSubmit = async () => {
+    const form = new FormData();
+    Object.keys(formData).forEach((key) => {
+      if (key !== "progressPhotos") {
+        const value = formData[key];
+        if (typeof value === "object") {
+          form.append(key, JSON.stringify(value)); // only for arrays/objects
+        } else {
+          form.append(key, value); // plain strings go as-is
+        }
       }
-    }
-  });
+    });
 
-  formData.progressPhotos.forEach((photo) => {
-    if (photo.img_path) {
-      form.append("progressPhotos", photo.img_path); // file
-      form.append("progressPhotos", photo.img_name); // separate name field if needed
-    }
-  });
+    formData.progressPhotos.forEach((photo) => {
+      if (photo.img_path) {
+        form.append("progressPhotos", photo.img_path); // file
+        form.append("progressPhotos", photo.img_name); // separate name field if needed
+      }
+    });
 
-  const res = await fetch(`${API_URL}/dailyprogress`, {
-    method: "POST",
-    body: form,
-  });
+    const res = await fetch(`${API_URL}/dailyprogress`, {
+      method: "POST",
+      body: form,
+    });
 
-  const data = await res.json();
-  console.log("Response:", data);
+    const data = await res.json();
+    console.log("Response:", data);
 
-  alert("Report added successfully!");
-  setOpen(false);
-};
+    alert("Report added successfully!");
+    setOpen(false);
+  };
 
   // reusable array renderer
   const renderArrayInput = (arrayName, fields) => {
-  return formData[arrayName].map((item, i) => (
-    <div
-      key={i}
-      className="grid grid-cols-4 gap-2 mb-2 border p-2 relative rounded"
-    >
-      {fields.map((field) => (
-        <div key={field} className="flex flex-col mb-2">
-          <label className="mb-1 font-semibold text-sm capitalize">
-            {field.replace(/_/g, " ")}
-          </label>
-
-          {arrayName === "progressPhotos" && field === "img_path" ? (
-            <input
-              type="file"
-              accept="image/*"
-              onChange={(e) => {
-                const x = [...formData[arrayName]];
-                x[i][field] = e.target.files[0];
-                setFormData({ ...formData, [arrayName]: x });
-              }}
-              className="border p-2 rounded-md"
-            />
-          ) : (
-            <input
-              placeholder={field}
-              value={item[field]}
-              onChange={(e) => {
-                const x = [...formData[arrayName]];
-                x[i][field] = e.target.value;
-                setFormData({ ...formData, [arrayName]: x });
-              }}
-              className="border p-2 rounded-md"
-            />
-          )}
-        </div>
-      ))}
-
-      <button
-        onClick={() => {
-          const x = formData[arrayName].filter((_, index) => index !== i);
-          setFormData({ ...formData, [arrayName]: x });
-        }}
-        className="bg-red-500 text-white absolute top-1 right-1 p-1 rounded-full"
+    return formData[arrayName].map((item, i) => (
+      <div
+        key={i}
+        className="grid grid-cols-4 gap-2 mb-2 border p-2 relative rounded"
       >
-        <CgClose />
-      </button>
-    </div>
-  ));
-};
+        {fields.map((field) => (
+          <div key={field} className="flex flex-col mb-2">
+            <label className="mb-1 font-semibold text-sm capitalize">
+              {field.replace(/_/g, " ")}
+            </label>
+
+            {arrayName === "progressPhotos" && field === "img_path" ? (
+              <input
+                type="file"
+                accept="image/*"
+                onChange={(e) => {
+                  const x = [...formData[arrayName]];
+                  x[i][field] = e.target.files[0];
+                  setFormData({ ...formData, [arrayName]: x });
+                }}
+                className="border p-2 rounded-md"
+              />
+            ) : (
+              <input
+                placeholder={field}
+                value={item[field]}
+                onChange={(e) => {
+                  const x = [...formData[arrayName]];
+                  x[i][field] = e.target.value;
+                  setFormData({ ...formData, [arrayName]: x });
+                }}
+                className="border p-2 rounded-md"
+              />
+            )}
+          </div>
+        ))}
+
+        <button
+          onClick={() => {
+            const x = formData[arrayName].filter((_, index) => index !== i);
+            setFormData({ ...formData, [arrayName]: x });
+          }}
+          className="bg-red-500 text-white absolute top-1 right-1 p-1 rounded-full"
+        >
+          <CgClose />
+        </button>
+      </div>
+    ));
+  };
 
   const addRow = (arrayName, template) => {
     setFormData({
@@ -230,19 +248,19 @@ const handleSubmit = async () => {
             </div>
             {/* BASIC INFO */}
             <div className="grid grid-cols-4 gap-2">
-              {[ 
+              {[
                 "employer",
                 "contractor",
                 "project_name",
-              //  "project_id",
+                //  "project_id",
                 "consultant",
-              //  "report_no",
-              //  "month",
-              //  "week_no",
-              //  "elapsed_date",
-              //  "remaining_days",
+                //  "report_no",
+                //  "month",
+                //  "week_no",
+                //  "elapsed_date",
+                //  "remaining_days",
                 "commencement_date",
-              //  "duration",
+                //  "duration",
                 "completion_date",
                 "forcast_completion_date",
                 "eot_granted",
@@ -264,7 +282,8 @@ const handleSubmit = async () => {
                   >
                     {field.replace(/_/g, " ")}
                   </label>
-                  {field === "commencement_date" || field === "completion_date" ? (
+                  {field === "commencement_date" ||
+                  field === "completion_date" ? (
                     <input
                       type="date"
                       name={field}
@@ -321,9 +340,27 @@ const handleSubmit = async () => {
               {" "}
               + Add Row{" "}
             </button>
+            <h2 className="font-bold mt-6">Project Progress Schedule</h2>
+            {renderArrayInput("projectProgressSchedule", [
+              "wbs_name",
+              "wbs_planned",
+              "wbs_actual",
+            ])}
+            <button
+              onClick={() =>
+                addRow("projectProgressSchedule", {
+                  wbs_name: "",
+                  wbs_planned: "",
+                  wbs_actual: "",
+                })
+              }
+              className="bg-green-600 text-white px-3 py-1"
+            >
+              + Add WBS
+            </button>
             {/* ENGINEERING QUANTITY */}
-            <h2 className="font-bold mt-6">Engineering Quantity</h2>
-            {formData.engineeringQuantity.map((item, i) => (
+            <h2 className="font-bold mt-6">HSE Statistics Tabulation</h2>
+            {formData.hseStatistics.map((item, i) => (
               <div key={i} className="border p-3 mb-3 rounded relative">
                 <div className="grid grid-cols-3 gap-2 mb-2">
                   <div className="flex flex-col gap-1">
@@ -410,7 +447,8 @@ const handleSubmit = async () => {
                       value={item.performance_percentage_actual_planned}
                       onChange={(e) => {
                         const x = [...formData.engineeringQuantity];
-                        x[i].performance_percentage_actual_planned = e.target.value;
+                        x[i].performance_percentage_actual_planned =
+                          e.target.value;
                         setFormData({ ...formData, engineeringQuantity: x });
                       }}
                       className="border p-2 rounded-md"
@@ -508,6 +546,9 @@ const handleSubmit = async () => {
                       kpi_name: "",
                       category: "",
                       responsibility: "",
+                      planned_to_date: "",
+                      released_to_date: "",
+                      performance_percentage_actual_planned: "",
                       status: [{ status_name: "", status_value: "" }],
                     },
                   ],
@@ -568,6 +609,7 @@ const handleSubmit = async () => {
               "manpower_month",
               "manpower_actual",
               "manpower_planned",
+              "manpower_remarks",
             ])}{" "}
             <button
               onClick={() =>
@@ -603,6 +645,26 @@ const handleSubmit = async () => {
               {" "}
               + Add Risk{" "}
             </button>{" "}
+            <h2 className="font-bold mt-6">HSE Statistics</h2>
+            {renderArrayInput("hseStatistics", [
+              "hse_category",
+              "hse_description",
+              "hse_weekly_status",
+              "hse_cumulative_status",
+            ])}
+            <button
+              onClick={() =>
+                addRow("hseStatistics", {
+                  hse_category: "",
+                  hse_description: "",
+                  hse_weekly_status: "",
+                  hse_cumulative_status: "",
+                })
+              }
+              className="bg-green-600 text-white px-3 py-1"
+            >
+              + Add HSE
+            </button>
             <h2 className="font-bold mt-6">Progress Photos</h2>{" "}
             {renderArrayInput("progressPhotos", ["img_name", "img_path"])}{" "}
             <button
