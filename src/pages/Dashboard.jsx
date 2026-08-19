@@ -43,11 +43,9 @@ const Dashboard = () => {
     <div className="h-screen w-screen flex bg-gray-50">
       {/* Sidebar */}
       <Sidebar />
-
       {/* Main content area */}
       <div className="flex-1 flex flex-col">
         <Navbar />
-
         {/* Map Section */}
         <div className="flex-1 relative">
           <MapContainer
@@ -60,7 +58,6 @@ const Dashboard = () => {
               url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
               attribution='&copy; OpenStreetMap contributors'
             />
-
             {/* Markers */}
             {LOCATIONS.map((loc, idx) => (
               <Marker
