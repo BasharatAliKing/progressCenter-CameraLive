@@ -129,8 +129,8 @@ const LiveProgress = () => {
           <img className="flex w-1/2" src={`${IMAGE_PATH}${selectedCameraData.image}`} alt="" />
         </div>
       ) : null}
-      <div className="flex gap-5 px-5 md:px-0 w-full">
-        <div className="hidden md:flex flex-col gap-3 w-[250px] xl:w-[300px] bg-white h-[calc(100vh-134px)] p-5 overflow-y-auto">
+      <div className="flex min-w-0 gap-5 px-5 md:px-0 w-full">
+        <div className="hidden md:flex md:sticky md:top-20 md:self-start md:shrink-0 flex-col gap-3 w-[250px] xl:w-[300px] bg-white h-[calc(100vh-5rem)] p-5 overflow-y-auto">
           <div className="flex flex-col gap-1">
             <h2 className="text-xs font-medium">
               <Link
@@ -198,7 +198,7 @@ const LiveProgress = () => {
             <h1 className="text-sm text-gray-500">Milestones</h1>
           </div>
         </div>
-        <div className="flex-1 flex-col gap-5 md:pr-5 w-full">
+        <div className="flex min-w-0 flex-1 flex-col gap-5 md:pr-5">
           {loading ? (
             <div className="flex w-full h-[70vh] items-center justify-center">
               <img
